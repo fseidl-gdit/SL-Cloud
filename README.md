@@ -7,7 +7,7 @@ This project provides a cloud-based data access platform coupled with software a
 
 ***
 ### Scripts
-- [SL library](https://github.com/bhrtrcn/SyntheticLethality/blob/c7bf444b2eece46777dd545b52f18cd4150d0153/scripts/SL_library.py)
+- [SL library](https://github.com/IlyaLab/SL-Cloud/tree/main/scripts/)
 ***
 
 ### Notebooks
