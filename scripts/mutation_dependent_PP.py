@@ -6,6 +6,89 @@ from scipy import stats
 import statsmodels.stats.multitest as multi
 import numpy as np
 
+def GeneSymbol_standardization(Gene_list):
+    
+    query='''
+        SELECT *
+        FROM  `syntheticlethality.gene_information.gene_info_human`
+        where Gene in UNNEST(@input_gene_list)
+        '''
+    job_config = bigquery.QueryJobConfig(
+    query_parameters=[
+            bigquery.ArrayQueryParameter("input_gene_list", "STRING", Gene_list)
+        ]
+        )
+
+    id_map = client.query(query,  job_config=job_config).result().to_dataframe()
+
+    Gene_list_all = list(set(list(id_map['Alias'].values) + list(id_map['Gene'].values) ))
+
+
+    query1 = ''' 
+                select Hugo_Symbol
+                from `syntheticlethality.DepMap_public_20Q3.CCLE_mutation`
+                where Hugo_Symbol in UNNEST(@input_gene_list_new)
+                '''
+
+    job_config = bigquery.QueryJobConfig(
+    query_parameters=[
+            bigquery.ArrayQueryParameter("input_gene_list_new", "STRING", Gene_list_all)
+        ]
+        )
+
+    Mut_mat = client.query(query1, job_config=job_config).result().to_dataframe()
+    set_gene_CCLE = set(Mut_mat['Hugo_Symbol'])
+
+    dic_gene_to_alias = {}
+    output_gene_list = []
+    for Gene in Gene_list:
+        dic_gene_to_alias[Gene] = set(id_map.loc[id_map['Gene'] == Gene]['Alias']).intersection(set_gene_CCLE)
+        if Gene in set(id_map['Gene']) and Gene in dic_gene_to_alias[Gene]:
+            output_gene_list.append(Gene)
+        else:
+            print(Gene + ":" + ','.join(list(dic_gene_to_alias[Gene])))
+            for value in dic_gene_to_alias[Gene]:
+                if value in set(id_map['Alias']):
+                    output_gene_list.append(value) 
+            
+    return(dic_gene_to_alias, output_gene_list)
+
+
+
+def GeneSymbol_standardization_output(Gene_list):
+    Gene_list = list(set(Gene_list))
+    
+    query='''
+        SELECT *
+        FROM  `syntheticlethality.gene_information.gene_info_human`
+        where Gene in UNNEST(@input_gene_list)
+        '''
+    job_config = bigquery.QueryJobConfig(
+    query_parameters=[
+            bigquery.ArrayQueryParameter("input_gene_list", "STRING", Gene_list)
+        ]
+        )
+
+    id_map = client.query(query,  job_config=job_config).result().to_dataframe()
+    alias_list = list(id_map['Alias'].values)
+    gene_list = list(id_map['Gene'].values) 
+    
+    
+
+    dic_alias_to_gene = {}
+    
+    for i in range(0,len(alias_list)):
+        dic_alias_to_gene[alias_list[i]] = gene_list[i]
+    
+    #result_gene_list = []
+    #for gene in Gene_list:
+    #    if gene in dic_alias_to_gene:
+    #        result_gene_list.append(dic_alias_to_gene[gene])
+    #    else:
+    #        result_gene_list.append(gene)
+    return(dic_alias_to_gene)
+
+
 def get_ccle_sample_info():
     query = ''' 
             SELECT DepMap_ID, CCLE_Name,primary_disease,TCGA_subtype
@@ -188,7 +271,7 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
     es_list = []
     size_mut = []
     FDR_List = []
-
+    result = pd.DataFrame()
     #for Gene in list(mut_gene['HGNC_gene_symbol']):
 
     for Gene in mut_gene:
@@ -198,7 +281,7 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
         Mut_group = list(Mut_mat_sele3.loc[Mut_mat_sele3['Hugo_Symbol'] == Gene]['DepMap_ID'].values)
         #Mut_group = list(Mut_mat_sele3.loc[Mut_mat_sele3['Hugo_Symbol'].isin(mut_gene) ]['DepMap_ID'].values)
         WT_group = list(set(Samples_with_mut_kd) - set(Mut_group))
-
+        #print(len(Mut_group))
         for Gene_kd in list(Depmap_matrix_sele.index.values):
             D_mut_new = Depmap_matrix_sele.loc[Gene_kd,Mut_group].values
             D_wt_new = Depmap_matrix_sele.loc[Gene_kd,WT_group].values
@@ -210,9 +293,9 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
             nan_array = np.isnan(D_wt_new)
             not_nan_array = ~ nan_array
             D_wt_new = D_wt_new[not_nan_array]
-
-
+            
             if len(D_mut_new) > 5:
+                
 
                 Sci_test = stats.ttest_ind(D_mut_new, D_wt_new, nan_policy = 'omit')
                 pvalue = Sci_test[1]
@@ -229,19 +312,41 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
             FDR_List_table = multi.multipletests(p_list_curr, alpha=0.05, method='fdr_bh', is_sorted=False)[1]
             p_list = p_list + p_list_curr
             FDR_List = FDR_List + list(FDR_List_table)
+            
+    if len(p_list) > 0:
+        FDR_List_table = multi.multipletests(p_list, alpha=0.05, method='fdr_bh', is_sorted=False)[1]
+        FDR_List_allExp = list(FDR_List_table)
     
-    FDR_List_table = multi.multipletests(p_list, alpha=0.05, method='fdr_bh', is_sorted=False)[1]
-    FDR_List_allExp = list(FDR_List_table)
-    
-    result = pd.DataFrame({"Gene_mut": Gene_mut_list, 
-                       "Gene_kd": Gene_kd_list, 
-                       "Mutated_samples":size_mut,
-                       "pvalue": p_list, 
-                       "ES":es_list, 
-                       "FDR_by_gene": FDR_List,
-                       "FDR_all_exp":FDR_List_allExp,
-                       "Tumor_type":[','.join(tumor_type)]*len(FDR_List_allExp)
-                      })
+        Gene_mut_list_symbol = []
+        Gene_mut_list_set = list(set(Gene_mut_list))
+
+        dic_alias_gene = GeneSymbol_standardization_output(Gene_kd_list)
+        Gene_mut_list_Symbol = []
+        for gene in Gene_mut_list:
+            if gene in dic_alias_gene:
+                Gene_mut_list_Symbol.append(dic_alias_gene[gene])
+            else:
+                Gene_mut_list_Symbol.append(gene)
+
+        Gene_kd_list_symbol = []
+        for gene in Gene_kd_list:
+            if gene in dic_alias_gene:
+                Gene_kd_list_symbol.append(dic_alias_gene[gene])
+            else:
+                Gene_kd_list_symbol.append(gene)
+
+        result = pd.DataFrame({"Gene_mut": Gene_mut_list, 
+                               "Gene_mut_symbol": Gene_mut_list_Symbol,
+                               "Gene_kd": Gene_kd_list, 
+                               "Gene_kd_symbol":Gene_kd_list_symbol,
+                               "Mutated_samples":size_mut,
+                               "pvalue": p_list, 
+                               "ES":es_list, 
+                               "FDR_by_gene": FDR_List,
+                               "FDR_all_exp":FDR_List_allExp,
+                               "Tumor_type":[','.join(tumor_type)]*len(FDR_List_allExp)
+                          })
     return(result)
     
+
 
