@@ -8,6 +8,7 @@ import pandas_gbq as gbq
 from functools import reduce
 import helper_functions
 from helper_functions import *
+
 def CoexpressionAnalysis(client, data_resource, input_genes, cor_threshold, p_threshold, adj_method):
 
     '''
@@ -212,9 +213,6 @@ def SurvivalOfFittest(client, data_source, p_threshold, input_genes, input_mutat
 
     input_aliases=ConvertGene(client, input_genes, 'EntrezID', ['Gene'])
     input_symbols=pd.merge(results_all_genes, input_aliases, left_on = 'Hugo_Symbol', right_on='Gene', how='inner')
-    #input_symbols.rename(columns={'Gene': 'Gene_Inactive'}, inplace=True)
-
-    #rel_input_symbols=list(set(input_aliases['Alias']) & set(results_all_genes[gene_col_name]))
     genes_intermediate_representation = ["'"+str(x)+"'" for x in input_symbols['Hugo_Symbol']]
 
     input_genes_query= ','.join(genes_intermediate_representation)
@@ -330,10 +328,11 @@ ORDER BY pvalue ASC '''
     report.columns=['Gene_Inactive', 'Gene_SL_Candidate', 'PValue']
 
     if (adj_method!='none'):
-        FDR=multipletests(report['PValue'], alpha=0.05, method= adj_method, is_sorted=False)[1]
+        FDR=multipletests(report['PValue'], method= adj_method, is_sorted=False)[1]
         report['PValue']=FDR
 
     report=report.loc[report['PValue'] < p_threshold]
+    print(report)
     if report.shape[0]<1:
         return report
     rel_symbols= report.Gene_SL_Candidate.unique()
@@ -344,9 +343,6 @@ ORDER BY pvalue ASC '''
     inactive_symbols=ConvertGene(client, inactive_symbols, 'Gene', ['EntrezID'])
 
     report=pd.merge(input_symbols, report, left_on = 'Gene', right_on='Gene_Inactive', how = 'inner')
-    #print(report)
-    # Hugo_Symbol  EntrezID  Gene Inactive  SL_Candidate        PValue
-     #Hugo_Symbol  EntrezID Gene Inactive  SL_Candidate    PValue
 
     report=pd.merge(report[['EntrezID', 'Gene_Inactive', 'Gene_SL_Candidate', 'PValue']], candidate_symbols, left_on = 'Gene_SL_Candidate', right_on='Gene_SL_Candidate',  how = 'inner', suffixes=('_Inactive', '_SL_Candidate'))
 
@@ -435,7 +431,7 @@ def FunctionalExamination(client, database, p_threshold, input_genes, percentile
         (RANK() OVER (PARTITION BY __ENTREZ_ID__ ORDER BY __EFFECT__ ASC)) + (COUNT(*) OVER ( PARTITION BY __ENTREZ_ID__, CAST(__EFFECT__ as STRING)) - 1)/2.0  AS rnkdata
     FROM
        __ACHILLES_TABLE__
-       where __ENTREZ_ID__ IS NOT NULL
+       where __ENTREZ_ID__ IS NOT NULL AND __EFFECT__ IS NOT NULL
        ),
 summ_table AS (
 SELECT
@@ -544,6 +540,9 @@ def UnionResults(results):
     '''
 
     for i in range(len(results)):
+        if results[i].shape[0]<1:
+            print("At least one of the dataframes is empty, please run only with nonempty dataframes");
+            return()
         results[i].reset_index(inplace=True, drop=True)
         if  'Correlation' in results[i].columns:
                 results[i].rename(columns = {'Correlation':'Correlation_'+ str(i)}, inplace = True)
@@ -566,6 +565,9 @@ def MergeResults(results):
     a combined p-value is returned for each Synthetic Lethal pair.
     '''
     for i in range(len(results)):
+        if results[i].shape[0]<1:
+            print("At least one of the dataframes is empty, please run only with nonempty dataframes");
+            return();
         results[i].reset_index(inplace=True, drop=True)
         results[i].rename(columns = {'PValue':'PValue'+ str(i)}, inplace = True)
 
