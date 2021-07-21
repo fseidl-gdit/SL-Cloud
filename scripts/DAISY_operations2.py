@@ -142,7 +142,6 @@ def RetrieveSamples(client, data_resource, method, tissues):
       `syntheticlethality.DepMap_public_20Q3.Achilles_gene_effect` A  WHERE  ST.primary_disease not
       in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND A.DepMap_ID=ST.DepMap_ID)  TS'''
         if tissues.count('pancancer')==0:
-            print("wrong place")
             sample_selection_sql=sample_selection_sql+ tissue_query
             sample_selection_sql=sample_selection_sql.replace('__TISSUE__', input_tissues)
         selected_samples= list(client.query(sample_selection_sql).result().to_dataframe()['DepMap_ID'])
