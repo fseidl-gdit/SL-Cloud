@@ -59,23 +59,21 @@ def GetTCGASubtypes(client):
     return(list(all_tissues['TCGA_subtype']))
 
 def RetrieveSamples(client, data_resource, method, tissues):
-    
+    min_sample_size=20;
     input_tissues= ["'"+ str(x) + "'" for x in tissues]
     input_tissues= ','.join(input_tissues)
 
-    query_tissue="and  Study in (__TISSUE__)" 
-
     if data_resource=='PanCancerAtlas' and method=='correlation':
-        tissue_query= "Study in (__TISSUE__)"
+        tissue_query= " AND Study in (__TISSUE__)"
         sample_selection_sql='''SELECT distinct SampleBarcode FROM `pancancer-atlas.Filtered.EBpp_AdjustPANCAN_IlluminaHiSeq_RNASeqV2_genExp_filtered` 
     WHERE SampleType not like '%Normal%' and Study is not null '''
-        if tissues.count('pancancer')==0:
+        if tissues.count('pancancer')==0:          
             sample_selection_sql=sample_selection_sql + tissue_query
             sample_selection_sql= sample_selection_sql.replace('__TISSUE__', input_tissues)
         selected_samples= list(client.query(sample_selection_sql).result().to_dataframe()['SampleBarcode'])
 
     elif data_resource=='PanCancerAtlas' and method=='sof':
-        tissue_query= "WHERE TS.Study  in (__TISSUE__)"
+        tissue_query= " WHERE  TS.Study  in (__TISSUE__)"
         sample_selection_sql= '''SELECT distinct SampleBarcode, Study FROM 
                 (SELECT distinct SampleBarcode, Study FROM `pancancer-atlas.Filtered.EBpp_AdjustPANCAN_IlluminaHiSeq_RNASeqV2_genExp_filtered`
 		WHERE SampleType not like '%Normal%'and Study is not null
@@ -91,6 +89,7 @@ def RetrieveSamples(client, data_resource, method, tissues):
             sample_selection_sql= sample_selection_sql.replace('__TISSUE__', input_tissues)
         selected_samples= list(client.query(sample_selection_sql).result().to_dataframe()['SampleBarcode'])
 
+ 
     elif data_resource=='CCLE' and method=='correlation':
         tissue_query= " AND ST.TCGA_subtype in (__TISSUE__) "
         sample_selection_sql= ''' SELECT  distinct ST.DepMap_ID FROM  `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
@@ -121,7 +120,9 @@ def RetrieveSamples(client, data_resource, method, tissues):
         if tissues.count('pancancer')==0:
             sample_selection_sql=sample_selection_sql+ tissue_query
             sample_selection_sql=sample_selection_sql.replace('__TISSUE__', input_tissues)
+
         selected_samples= list(client.query(sample_selection_sql).result().to_dataframe()['DepMap_ID'])
+
         
     elif data_resource=='CRISPR' and method=='func_ex':
         tissue_query=  " WHERE TS.TCGA_subtype in (__TISSUE__) "
@@ -145,6 +146,7 @@ def RetrieveSamples(client, data_resource, method, tissues):
             sample_selection_sql=sample_selection_sql+ tissue_query
             sample_selection_sql=sample_selection_sql.replace('__TISSUE__', input_tissues)
         selected_samples= list(client.query(sample_selection_sql).result().to_dataframe()['DepMap_ID'])
+
 
     elif data_resource=='shRNA' and method=='func_ex':
         tissue_query="WHERE TS.TCGA_subtype in (__TISSUE__)"
@@ -179,6 +181,7 @@ def RetrieveSamples(client, data_resource, method, tissues):
             sample_selection_sql=sample_selection_sql.replace('__TISSUE__', input_tissues)
         selected_samples= client.query(sample_selection_sql).result().to_dataframe()
 
+
     return selected_samples
 
 def CoexpressionAnalysis(client, SL_or_SDL, data_resource, input_genes, adj_method, tissues):
@@ -186,7 +189,7 @@ def CoexpressionAnalysis(client, SL_or_SDL, data_resource, input_genes, adj_meth
     '''
     The gene correlation information is used to detect SL pairs.
     '''
-
+  
     if data_resource=='PanCancerAtlas':
         table_name='pancancer-atlas.Filtered.EBpp_AdjustPANCAN_IlluminaHiSeq_RNASeqV2_genExp_filtered'
         gene_col_name='Symbol'
@@ -195,6 +198,7 @@ def CoexpressionAnalysis(client, SL_or_SDL, data_resource, input_genes, adj_meth
         sample_barcode='SampleBarcode'
         selected_samples=RetrieveSamples(client, 'PanCancerAtlas', 'correlation', tissues)
         gene_mapping=ProcessGeneAlias(client, input_genes, 'PanCancerAtlas')
+
         
     elif data_resource=='CCLE':
         table_name='syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression'
@@ -209,7 +213,10 @@ def CoexpressionAnalysis(client, SL_or_SDL, data_resource, input_genes, adj_meth
         print("The database name can be either PanCancerAtlas or CCLE")
         return()
 
-
+    min_sample_size=20
+    if len(selected_samples)< (min_sample_size+1):
+        print("Sample size needs to be greater than " +  str(min_sample_size) + ", it is " + str(len(selected_samples)))
+        return()
     sql_correlation= """ CREATE TEMPORARY FUNCTION tscore_to_p(a FLOAT64, b FLOAT64, c FLOAT64)
      RETURNS FLOAT64
     LANGUAGE js AS
@@ -341,42 +348,43 @@ def SurvivalOfFittest(client, SL_or_SDL, data_source, input_genes, percentile_th
   given one gene is inactive vs not-inactive
   '''
   if data_source=='PanCancerAtlas':
-    gene_exp_table='pancancer-atlas.Filtered.EBpp_AdjustPANCAN_IlluminaHiSeq_RNASeqV2_genExp_filtered'
-    mutation_table='pancancer-atlas.Filtered.MC3_MAF_V5_one_per_tumor_sample'
-    cn_table='pancancer-atlas.Filtered.all_CNVR_data_by_gene_filtered'
-    sample_id='SampleBarcode'
-    gene_col_name='Symbol'
-    gene_exp='normalized_count'
-    cn_gene_name='Gene_Symbol'
-    mutation_gene_name='Hugo_Symbol'
-    mutation_sample_id='Tumor_SampleBarcode'
-    cn_gistic='GISTIC_Calls'
-    entrez_id='Entrez'
-    selected_samples= RetrieveSamples(client, 'PanCancerAtlas', 'sof', tissues)
-    gene_mapping=ProcessGeneAlias(client, input_genes, 'PanCancerAtlas')
-
-
+        gene_exp_table='pancancer-atlas.Filtered.EBpp_AdjustPANCAN_IlluminaHiSeq_RNASeqV2_genExp_filtered'
+        mutation_table='pancancer-atlas.Filtered.MC3_MAF_V5_one_per_tumor_sample'
+        cn_table='pancancer-atlas.Filtered.all_CNVR_data_by_gene_filtered'
+        sample_id='SampleBarcode'
+        gene_col_name='Symbol'
+        gene_exp='normalized_count'
+        cn_gene_name='Gene_Symbol'
+        mutation_gene_name='Hugo_Symbol'
+        mutation_sample_id='Tumor_SampleBarcode'
+        cn_gistic='GISTIC_Calls'
+        entrez_id='Entrez'
+        selected_samples= RetrieveSamples(client, 'PanCancerAtlas', 'sof', tissues)
+        gene_mapping=ProcessGeneAlias(client, input_genes, 'PanCancerAtlas')
   elif data_source=='CCLE':
-    mutation_table='syntheticlethality.DepMap_public_20Q3.CCLE_mutation'
-    gene_exp_table='syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression'
-    cn_table='syntheticlethality.DepMap_public_20Q3.CCLE_gene_cn'
-    sample_id='DepMap_ID'
-    gene_col_name='Hugo_Symbol'
-    gene_exp='TPM'
-    cn_gene_name='Hugo_Symbol'
-    mutation_gene_name='Hugo_Symbol'
-    mutation_sample_id='Tumor_Sample_Barcode'
-    cn_gistic='CNA'
-    cn_threshold=np.log2(2**(cn_threshold)+1)
-    entrez_id='Entrez_ID'
-    selected_samples= RetrieveSamples(client, 'CCLE', 'sof', tissues)
-    gene_mapping=ProcessGeneAlias(client, input_genes, 'DepMap')
+        mutation_table='syntheticlethality.DepMap_public_20Q3.CCLE_mutation'
+        gene_exp_table='syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression'
+        cn_table='syntheticlethality.DepMap_public_20Q3.CCLE_gene_cn'
+        sample_id='DepMap_ID'
+        gene_col_name='Hugo_Symbol'
+        gene_exp='TPM'
+        cn_gene_name='Hugo_Symbol'
+        mutation_gene_name='Hugo_Symbol'
+        mutation_sample_id='Tumor_Sample_Barcode'
+        cn_gistic='CNA'
+        cn_threshold=np.log2(2**(cn_threshold)+1)
+        entrez_id='Entrez_ID'
+        selected_samples= RetrieveSamples(client, 'CCLE', 'sof', tissues)
+        gene_mapping=ProcessGeneAlias(client, input_genes, 'DepMap')
 
 
   else :
-    print("The data source name can be either PanCancerAtlas or CCLE")
-    return()
-
+        print("The data source name can be either PanCancerAtlas or CCLE")
+        return()
+  min_sample_size=20
+  if len(selected_samples)< (min_sample_size+1):
+        print("Sample size needs to be greater than " +  str(min_sample_size), " it is " + str(len(selected_samples)))
+        return()
 
   sql_without_mutation= '''
     WITH
@@ -511,7 +519,7 @@ ORDER BY pvalue ASC '''
 
   results= client.query(sql_sof).result().to_dataframe()
   if results.shape[0]<1:
-      print("SOF inference procedure did not find candidate" + SL_or_SDL + " pairs.")
+      print("SOF inference procedure did not find candidate "  + SL_or_SDL + " pairs.")
       return(results)
   report=results [['symbol1', 'symbol2', 'n1', 'n', 'U1', 'pvalue']]
   report=report.dropna()
@@ -574,6 +582,10 @@ def FunctionalExamination(client, SL_or_SDL, database, input_genes, percentile_t
     cn_threshold=np.log2(2**(cn_threshold)+1)
     gene_mapping=ProcessGeneAlias(client, input_genes, 'DepMap')
 
+    min_sample_size=20
+    if len(selected_samples)< (min_sample_size+1):
+        print("Sample size needs to be greater than " +  str(min_sample_size) + ", it is " + str(len(selected_samples)))
+        return()
     sql_without_mutation= """
     WITH
     table1 AS (
