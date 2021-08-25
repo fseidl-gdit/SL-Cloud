@@ -192,7 +192,7 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
 
     else:
         tumor_selected = tumor_type
-        cl_sele = sample_info.loc[sample_info['TCGA_subtype'].isin((tumor_selected))]['DepMap_ID']  
+        cl_sele = sample_info.loc[sample_info['primary_disease'].isin((tumor_selected))]['DepMap_ID']  
         cl_sele = list(set(list(Depmap_matrix.index.values)).intersection(set(cl_sele)))
 
         
@@ -282,6 +282,8 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
         #Mut_group = list(Mut_mat_sele3.loc[Mut_mat_sele3['Hugo_Symbol'].isin(mut_gene) ]['DepMap_ID'].values)
         WT_group = list(set(Samples_with_mut_kd) - set(Mut_group))
         #print(len(Mut_group))
+        print(len(Mut_group))
+        
         for Gene_kd in list(Depmap_matrix_sele.index.values):
             D_mut_new = Depmap_matrix_sele.loc[Gene_kd,Mut_group].values
             D_wt_new = Depmap_matrix_sele.loc[Gene_kd,WT_group].values
