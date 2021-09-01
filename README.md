@@ -45,5 +45,5 @@ To  add the syntheticlethality dataset, users need to pin the syntheticlethality
 <img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/add_sl_dataset.png" height="300" width="600">
 
 ## Getting Started
-Please run the [First notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/first_notebook.ipynb) to start using our bigquery tables. 
+Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/first_notebook.ipynb) to start using our bigquery tables. 
 
