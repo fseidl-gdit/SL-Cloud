@@ -43,8 +43,6 @@ To be able to use our platform, researchers first need to have a Google register
 ### Accessing SL Resource
 To add the syntheticlethality dataset, users need to pin the syntheticlethality project by first clicking ADD DATA and after selecting Pin a project as shown in Figure. After entering the project name as syntheticlethality, please click on PIN. 
 
-We should explain how they can access our tables from their resources. 
-Shall we add figures here or give link to the documentation file?
 
 ## Getting Started
 
