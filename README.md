@@ -3,7 +3,7 @@
 This project provides a cloud-based data access platform coupled with software and well documented computational notebooks that re-implement published synthetic lethality (SL) inference algorithms to facilitate novel investigation into synthetic lethality. In addition  we provide general purpose functions that support these prediction workflows e.g. saving data in bigquery tables. We anticipate that computationally savvy users can leverage the resources provided in this project to conduct highly customizable analysis based on their cancer type of interest and particular context. 
 
 ## Resource Overview
-<img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/slhub_overview.png" height="400" width="400">
+<img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/slhub_overview.png" height="300" width="600">
 
 ### Scripts
 - [SL library](https://github.com/IlyaLab/SL-Cloud/tree/main/scripts/)
@@ -42,7 +42,7 @@ To be able to use our platform, researchers first need to have a Google register
 ### Accessing SL Resource
 To  add the syntheticlethality dataset, users need to pin the syntheticlethality project by first clicking "ADD DATA" and after selecting "Pin a project" and "Search for project", you will see the window as in the Figure . After clicking the project name  syntheticlethality, please click on OPEN. 
 
-<img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/add_sl_dataset.png" height="240" width="480">
+<img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/add_sl_dataset.png" height="300" width="600">
 
 ## Getting Started
 Please run this notebook (https://github.com/IlyaLab/SL-Cloud/blob/first_notebook.ipynb) to start using our project. 
