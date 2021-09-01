@@ -4,10 +4,10 @@ This project provides a cloud-based data access platform coupled with software a
 
 ## Resource Overview
 <img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/slhub_overview.png" height="240" width="480">
-***
+
 ### Scripts
 - [SL library](https://github.com/IlyaLab/SL-Cloud/tree/main/scripts/)
-***
+
 
 ### Notebooks
 We provide representative synthetic lethal inference workflow based on highly cited published workflows
