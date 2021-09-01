@@ -3,7 +3,7 @@
 This project provides a cloud-based data access platform coupled with software and well documented computational notebooks that re-implement published synthetic lethality (SL) inference algorithms to facilitate novel investigation into synthetic lethality. In addition  we provide general purpose functions that support these prediction workflows e.g. saving data in bigquery tables. We anticipate that computationally savvy users can leverage the resources provided in this project to conduct highly customizable analysis based on their cancer type of interest and particular context. 
 
 ## Resource Overview
-![Resource Overview. Structure of the SL-Hub resource that shows the integration of various cancer genomics datasets and Jupyter notebooks into a cloud-based SL inference resource. ](https://github.com/IlyaLab/SL-Cloud/blob/main/figures/slhub_overview.png=250x250)
+![Resource Overview. Structure of the SL-Hub resource that shows the integration of various cancer genomics datasets and Jupyter notebooks into a cloud-based SL inference resource. ](https://github.com/IlyaLab/SL-Cloud/blob/main/figures/slhub_overview.png  width="400" height="790")
 
 ***
 ### Scripts
