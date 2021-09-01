@@ -28,9 +28,9 @@ We provide representative synthetic lethal inference workflow based on highly ci
 This resource provides access to publicly available cancer genomics datasets relevant for SL inference. These data have been pre-processed, cleaned and stored in cloud-based query-able tables leveraging [Google BigQuery](https://cloud.google.com/bigquery)  technology. In addition we leverage relevant datasets available through the Institute for Systems Biology Cancer Genomics Cloud ([ISB-CGC](https://isb-cgc.appspot.com/)) to make inferences of potential synthetic lethal interactions. 
 The following represent project-specific datasets with relevance for SL inference:
 
-- **DEPMAP**: DEPMAP shRNA (DEMETER2 V6) and CRISPR (DepMap Public 20Q3) gene expression, sample information, mutation and copy number alterations and gene dependency scores for shRNA and gene effect scores for CRISPR experiments.
+- **DEPMAP**: DEPMAP shRNA (DEMETER2 V6) and CRISPR (DepMap Public 20Q3) gene expression, sample information, mutation and copy number alterations  for CRISPR experiments and and gene dependency scores for shRNA and gene effect scores.
 
-- **CellMap**: Yeast interaction dataset based on fitness scores after single and double knockouts from SGA experiements
+- **CellMap**: Yeast interaction dataset based on fitness scores after single and double knockouts from SGA experiements.
 
 - **Gene Information**: Tables with relevant gene annotation information such as yeast and human ortholog information, gene-alias-Entrez ID mapping, gene Ensembl-id mapping, gene-Refseq mapping.
 
@@ -40,7 +40,7 @@ To be able to use our platform, researchers first need to have a Google register
 
 
 ### Accessing SL Resource
-To  add the syntheticlethality dataset, users need to pin the syntheticlethality project by first clicking "ADD DATA" and after selecting "Pin a project" and "Search for project", you will see the window as in the Figure . After clicking the project name  syntheticlethality, please click on OPEN. 
+To  add the syntheticlethality dataset, users need to pin the syntheticlethality project by first clicking "ADD DATA" and after selecting "Pin a project" and "Search for project", you will see the window as in the Figure below. After clicking the project name  syntheticlethality, please click on OPEN. 
 
 <img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/add_sl_dataset.png" height="300" width="600">
 
