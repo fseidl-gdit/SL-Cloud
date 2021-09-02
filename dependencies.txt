@@ -9,6 +9,7 @@ pip3 install statsmodels
 
 #CGI pipeline:
 pip3 install google-cloud-bigquery
+pip3 install matplotlib
 
 #DAISY pipeline:
 
