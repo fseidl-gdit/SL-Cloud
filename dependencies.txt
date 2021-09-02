@@ -14,6 +14,13 @@ pip3 install google-cloud-bigquery
 pip3 install matplotlib
 
 #DAISY pipeline:
+pip3 install datetime // I will remove this from code and here, it was just to measure the run time
+pip3 sys
+pip3 install google-cloud
+pip3 install importlib
+pip3 install pandas
+pip3 install ipywidgets
+
 
 
 #DEPMAP data save pipeline:
