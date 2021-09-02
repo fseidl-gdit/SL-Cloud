@@ -24,3 +24,5 @@ pip3 install numpy
 pip3 install statsmodels
 pip3 install pandas_gbq
 pip3 install functools
+
+
