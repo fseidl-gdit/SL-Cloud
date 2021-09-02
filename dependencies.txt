@@ -1,4 +1,6 @@
 # Libraries needed for different pipelines
+#First Notebook:
+
 
 #MDSLP pipeline:
 pip3 install pandas
@@ -13,6 +15,8 @@ pip3 install matplotlib
 
 #DAISY pipeline:
 
-#DEPMAP data save:
+
+#DEPMAP data save pipeline:
+
 
 
