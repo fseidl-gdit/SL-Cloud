@@ -15,7 +15,7 @@ pip3 install matplotlib
 
 #DAISY pipeline:
 pip3 install datetime // I will remove this from pipeline and here, it was just to measure the run time
-pip3 sys
+pip3 install sys
 pip3 install google.cloud
 pip3 install importlib
 pip3 install pandas
@@ -25,4 +25,10 @@ pip3 install statsmodels
 pip3 install pandas_gbq
 pip3 install functools
 
-
+#DEPMAP DataSave pipeline
+pip3 install sys
+pip3 install numpy
+pip3 install pandas
+pip3 install google.cloud
+pip3 install pandas_gbq
+pip3 install functools
