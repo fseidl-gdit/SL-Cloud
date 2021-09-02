@@ -16,7 +16,7 @@ We provide representative synthetic lethal inference workflow based on highly ci
 
 - [DAISY Pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/DAISY_pipeline/DAISY_from_library.ipynb) 
 - [Mutation-based Conditional SL pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/mutation_dependent_SL_pipeline/mutation_dependent_SL_pipeline.ipynb)
-- [Conservation-based Inference from Yeast Genetic Interactions](https://github.com/bhrtrcn/SyntheticLethality/blob/c7bf444b2eece46777dd545b52f18cd4150d0153/Notebooks/leveraging_conservation_pipeline/YeastOrtholog_SL_pairs.ipynb) (need to transfer here, links to bhrtrcn github)
+- [Conservation-based Inference from Yeast Genetic Interactions](https://github.com/IlyaLab/SL-Cloud/blob/main/CGI/conserved_genetic_interaction_SL.ipynb)
 
 #### Data Wrangling and Cleaning Associated Procedures 
 - Dataset Creation
