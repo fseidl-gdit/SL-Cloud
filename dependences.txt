@@ -10,3 +10,8 @@ pip3 install statsmodels
 #CGI pipeline:
 pip3 install google-cloud-bigquery
 
+#DAISY pipeline:
+
+#DEPMAP data save:
+
+
