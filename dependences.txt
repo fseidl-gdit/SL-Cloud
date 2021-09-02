@@ -1,6 +1,12 @@
+# Libraries needed for different pipelines
 
+#MDSLP pipeline:
 pip3 install pandas
 pip3 install numpy
 pip3 install ipywidgets
+pip3 install google-cloud-bigquery
+pip3 install statsmodels
+
+#CGI pipeline:
 pip3 install google-cloud-bigquery
 
