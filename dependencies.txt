@@ -14,8 +14,6 @@ pip3 install statsmodels
 pip3 install google-cloud-bigquery
 pip3 install matplotlib
 pip3 install plotly
-pip3 install google-cloud-bigquery-storage
-pip3 install pyarrow
 
 #DAISY pipelines:
 pip3 install sys
