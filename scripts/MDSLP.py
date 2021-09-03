@@ -276,13 +276,13 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
 
     for Gene in mut_gene:
     #for Gene in range(0,1):
-        print(Gene)
+        print("Gene mutated: " + Gene)
         p_list_curr = []
         Mut_group = list(Mut_mat_sele3.loc[Mut_mat_sele3['Hugo_Symbol'] == Gene]['DepMap_ID'].values)
         #Mut_group = list(Mut_mat_sele3.loc[Mut_mat_sele3['Hugo_Symbol'].isin(mut_gene) ]['DepMap_ID'].values)
         WT_group = list(set(Samples_with_mut_kd) - set(Mut_group))
         #print(len(Mut_group))
-        print(len(Mut_group))
+        print("Number of samples with mutation: " + str(len(Mut_group)))
         
         for Gene_kd in list(Depmap_matrix_sele.index.values):
             D_mut_new = Depmap_matrix_sele.loc[Gene_kd,Mut_group].values
