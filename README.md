@@ -10,12 +10,15 @@ This project provides a cloud-based data access platform coupled with software a
 
 
 ### Notebooks
-We provide representative synthetic lethal inference workflow based on highly cited published workflows
+We provide representative synthetic lethal inference workflows. 
+Firstly, we reimplemented the published workflow DAISY (Jerby-Arnon et al., 2014) using up-to-date large scale data resources. 
+Secondly, we implemented a mutation-dependent synthetic lethality prediction (MDSLP) workflow based on the rationale that for tumors with mutations that have an impact on protein expression or protein structure (functional mutation), the knockout effects or inhibition of a partner target gene show conditional dependence for the mutated molecular entities.
+Thirdly, we present a workflow that leverages cross-species conservation to infer experimentally-derived synthetic lethal interactions in yeast to predict relevant SL pairs in humans. We implemented the Conserved Genetic Interaction (CGI) workflow based, in part, on methods described in (Srivas et al., 2016) summarized here briefly.
 
 #### Sythetic Lethality Inference Workflows 
-
+Example notebooks can be found in the Example_pipelines directory, which including the following notebooks:
 - [DAISY Pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/DAISY_example.ipynb) 
-- [Mutation-based Conditional SL pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/MDSLP_example.ipynb)
+- [Mutation Dependent SL pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/MDSLP_example.ipynb)
 - [Conservation-based Inference from Yeast Genetic Interactions](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/CGI_example.ipynb)
 
 #### Data Wrangling and Cleaning Associated Procedures 
