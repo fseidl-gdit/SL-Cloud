@@ -4,10 +4,8 @@ import pandas as pd
 from statsmodels.sandbox.stats.multicomp import multipletests
 from scipy import stats
 from google.cloud import bigquery
-import pandas_gbq as gbq
 from functools import reduce
-import helper_functions
-from helper_functions import *
+
 
 
 def ProcessGeneAlias (client, input_gene_list, database):
@@ -411,16 +409,24 @@ def SurvivalOfFittest(client, SL_or_SDL, data_source, input_genes, percentile_th
     WHERE NC.NORM_CN __CN_CMP_STR__
     )'''
 
+  if data_source=='CCLE':
+        sql_mutation_part='''
 
-  sql_mutation_part='''
+        UNION DISTINCT
+        SELECT M.__MUTATION_GENE_NAME__  AS symbol , M.__MUTATION_SAMPLE_ID__ AS Barcode
+        FROM __MUTATION_TABLE__ M
+        WHERE __MUTATION_GENE_NAME__ IN (__GENELIST__) AND
+        M.Variant_Classification IN (__MUTATIONLIST__) AND __MUT_SAMPLE_ID__ in (__SAMPLE_LIST__)
+        )'''
 
-    UNION DISTINCT
-    SELECT M.__MUTATION_GENE_NAME__  AS symbol , M.__MUTATION_SAMPLE_ID__ AS Barcode
-    FROM __MUTATION_TABLE__ M
-    WHERE __MUTATION_GENE_NAME__ IN (__GENELIST__) AND
-    M.Variant_Classification IN (__MUTATIONLIST__) AND __MUT_SAMPLE_ID__ in (__SAMPLE_LIST__)
-    )'''
-
+  elif data_source=='PanCancerAtlas':
+        sql_mutation_part='''
+         UNION DISTINCT
+        SELECT M.__MUTATION_GENE_NAME__  AS symbol , M.__MUTATION_SAMPLE_ID__ AS Barcode
+        FROM __MUTATION_TABLE__ M
+        WHERE __MUTATION_GENE_NAME__ IN (__GENELIST__) AND
+        M.Variant_Classification IN (__MUTATIONLIST__) AND __MUT_SAMPLE_ID__ in (__SAMPLE_LIST__) AND Filter="PASS"
+        )'''
 
   rest_of_the_query= '''
      , table2 AS (
@@ -525,16 +531,16 @@ ORDER BY pvalue ASC '''
       return(results)
   report=results [['symbol1', 'symbol2', 'n1', 'n', 'U1', 'pvalue']]
   report=report.dropna()
-  report.columns=['InactiveDB', 'SL_Candidate', '#InactiveSamples', '#Samples', 'U1', 'PValue']
+  report.columns=['InactiveDB', 'SL_Candidate', '#InactiveSamples', '#Samples', 'U1','PValue']
   report['Inactive']= report['InactiveDB'].map(gene_mapping)
   FDR=multipletests(report['PValue'],  method= adj_method, is_sorted=False)[1]
   report['FDR']=FDR
   report['Tissue']=str(tissues)
   
-  cols=['Inactive', 'InactiveDB', 'SL_Candidate','#InactiveSamples', '#Samples', 'U1',  'PValue', 'FDR', 'Tissue']
+  cols=['Inactive', 'InactiveDB', 'SL_Candidate','#InactiveSamples', '#Samples',  'PValue', 'FDR', 'Tissue']
   report=report[cols]
   if SL_or_SDL=="SDL":
-      report.columns= ['Overactive', 'OveractiveDB', 'SL_Candidate','#Overactive', '#Samples', 'U1',  'PValue', 'FDR', 'Tissue']
+      report.columns= ['Overactive', 'OveractiveDB', 'SL_Candidate','#Overactive', '#Samples', 'PValue', 'FDR', 'Tissue']
   return report
 
   
@@ -717,31 +723,36 @@ ORDER BY pvalue ASC """
       print("Functional Examination inference procedure did not find candidate"+ SL_or_SDL + " pairs.")
       return(results)
     
-    report=results[['symbol1', 'symbol2', 'n1', 'n' ,'U1', 'pvalue']]
+    report=results[['symbol1', 'symbol2', 'n1', 'n' ,'pvalue']]
     report=report.dropna()
-    report.columns=['InactiveDB', 'SL_Candidate', '#InactiveSamples', '#Samples', 'U1', 'PValue']
+    report.columns=['InactiveDB', 'SL_Candidate', '#InactiveSamples', '#Samples', 'PValue']
     report['Inactive']= report['InactiveDB'].map(gene_mapping)
     FDR=multipletests(report['PValue'],  method= adj_method, is_sorted=False)[1]
     report['FDR']=FDR
     report['Tissue']=str(tissues)
-    cols=['Inactive', 'InactiveDB', 'SL_Candidate','#InactiveSamples', '#Samples', 'U1',  'PValue', 'FDR', 'Tissue']
+    cols=['Inactive', 'InactiveDB', 'SL_Candidate','#InactiveSamples', '#Samples', 'PValue', 'FDR', 'Tissue']
     report=report[cols]
     if SL_or_SDL=="SDL":
-      report.columns= ['Overactive', 'OveractiveDB', 'SL_Candidate','#Overactive', '#Samples', 'U1',  'PValue', 'FDR', 'Tissue']
+      report.columns= ['Overactive', 'OveractiveDB', 'SL_Candidate','#Overactive', '#Samples', 'PValue', 'FDR', 'Tissue']
     return report
 
 def UnionResults(results, SL_or_SDL, labels, tissues):
     '''
     This functions merges results from the same inference procedure applied on different datasets. A combined p-value is returned
     '''
-
+    inds=[]
     for i in range(len(results)):
         if results[i].shape[0]<1:
-            print("At least one of the dataframes is empty, please run only with nonempty dataframes");
-            return()
+            inds.append(i)
+            
+    indices = sorted(inds, reverse=True)
+    for idx in indices:
+        if idx < len(results):
+            results.pop(idx)
+    for i in range(len(results)):
         results[i].reset_index(inplace=True, drop=True)
         results[i].rename(columns = {labels[i]:labels[i]+ str(i)}, inplace = True)
-
+    
     combined_results=results[0]
     for i in range(1,len(results)):
         if SL_or_SDL=="SL":
@@ -768,16 +779,25 @@ def MergeResults(results, SL_or_SDL, tissues):
     The results from SoF, Coexpression and Fuctional Screening analysis (each of them is optional) are merged,
     a combined p-value is returned for each Synthetic Lethal pair.
     '''
+    inds=[]
     for i in range(len(results)):
         if results[i].shape[0]<1:
-            print("At least one of the dataframes is empty, please run only with nonempty dataframes");
-            return();
+            inds.append(i)
+            
+    indices = sorted(inds, reverse=True)
+    for idx in indices:
+        if idx < len(results):
+            results.pop(idx)
+    for i in range(len(results)):
         results[i].reset_index(inplace=True, drop=True)
         results[i].rename(columns = {'AggregatedP':'AggregatedP'+ str(i)}, inplace = True)
 
     combined_results=results[0]
     for i in range(1,len(results)):
-        combined_results =pd.merge(combined_results, results[i], on = ['Inactive', 'SL_Candidate'], how = 'inner')
+        if SL_or_SDL=="SL":
+            combined_results =pd.merge(combined_results, results[i], on = ['Inactive',  'SL_Candidate'], how = 'inner')
+        elif SL_or_SDL=="SDL":
+            combined_results =pd.merge(combined_results, results[i], on = ['Overactive',  'SL_Candidate'], how = 'inner')
 
     rel_cols=combined_results.columns[np.array([x.startswith('AggregatedP') for x in combined_results.columns])]
     p_matrix=combined_results[rel_cols]
