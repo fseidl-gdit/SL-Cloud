@@ -39,9 +39,9 @@ The following represent project-specific datasets with relevance for SL inferenc
 
 
 ### Account Creation
-To be able to use our platform, researchers first need to have a Google registered email, a Google Cloud account and have created a Google Project. 
+To be able to use our platform, researchers first need to have a Google registered email, a Google Cloud account and have created a Google Project. How to set up the accounts can be found  [ISB-CGC Quick Start Guide](https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/HowToGetStartedonISB-CGC.html)
 
-//They can connect the ISB-CGC to their project to be able to use the tables available in ISB-CGC database (Getting isb-cgc-bq dataset is a requirement to run DAISY //pipeline). How to use ISB-CGC is explained in detail by videos and notebooks on  [https://isb-cgc.appspot.com]([https://isb-cgc.appspot.com).
+#They can connect the ISB-CGC to their project to be able to use the tables available in ISB-CGC database (Getting isb-cgc-bq dataset is a requirement to run DAISY #pipeline). How to use ISB-CGC is explained in detail by videos and notebooks on  [https://isb-cgc.appspot.com]([https://isb-cgc.appspot.com).
 
 
 ### Accessing SL Resource
