@@ -47,6 +47,9 @@ To  add the syntheticlethality dataset, users need to pin the syntheticlethality
 
 <img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/add_sldataset.png" >
 
+### Accessing ISB-CGC Resources
+To add ISB-CGC tables, users need to follow the same steps with Accessing SL resource, only difference is, they need to write isb-cgc-bq into Projectname box.
+
 ## Getting Started
 Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/first_notebook.ipynb) to start using our bigquery tables. 
 
