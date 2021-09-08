@@ -43,7 +43,7 @@ To be able to use our platform, researchers first need to have a Google register
 
 
 ### Accessing SL Resource
-To  add the syntheticlethality dataset, users need to pin the syntheticlethality project by first clicking "ADD DATA" and after selecting "Pin a project" and "Search for project", you will see the window as in the Figure below. After clicking the project name  syntheticlethality, please click on OPEN. 
+To  add the syntheticlethality dataset, users need to pin the syntheticlethality project by first clicking "ADD DATA" and after selecting "Pin a project" and "Enter project name", you will see the window as in the Figure below. After writing syntheticlethality into Projectname box, please click on PIN. 
 
 <img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/add_sldataset.png" >
 
