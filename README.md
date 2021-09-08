@@ -50,7 +50,7 @@ To  add the syntheticlethality dataset, users need to pin the syntheticlethality
 
 ### Accessing ISB-CGC Resources
 To add ISB-CGC tables, users need to follow the same steps with Accessing SL resource, only difference is, they need to write isb-cgc-bq into Projectname box.
-Getting isb-cgc-bq dataset is a requirement to run DAISY pipeline.
+Adding isb-cgc-bq dataset is a requirement to run DAISY pipeline.
 ## Getting Started
 Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/first_notebook.ipynb) to start using our bigquery tables. 
 
