@@ -39,7 +39,7 @@ The following represent project-specific datasets with relevance for SL inferenc
 
 
 ### Account Creation
-To be able to use our platform, researchers first need to have a Google registered email, a Google Cloud account and have created a Google Project. How to set up the accounts can be found  [ISB-CGC Quick Start Guide](https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/HowToGetStartedonISB-CGC.html)
+To be able to use our platform, researchers first need to have a Google registered email, a Google Cloud account and have created a Google Project. How to set up the accounts can be found at  [ISB-CGC Quick Start Guide](https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/HowToGetStartedonISB-CGC.html).
 
 
 
