@@ -21,7 +21,7 @@ Adding isb-cgc-bq dataset is a requirement to run DAISY pipeline.
 
 Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/first_notebook.ipynb) to start using our bigquery tables. 
 
-## What is there in the Project
+## What is There in the Project?
 ### Scripts
 - [SL library](https://github.com/IlyaLab/SL-Cloud/tree/main/scripts/)
 
