@@ -8,7 +8,9 @@ This project provides a cloud-based data access platform coupled with software a
 
 
 ### Notebooks
-We provide representative synthetic lethal inference workflows. </br> (Guangrong, I guess you updated this part. It looks like copy paste from manuscript, could you please go over it.)
+(Guangrong, I guess you updated this part. It looks like copy paste from manuscript, could you please go over it.)
+
+We provide representative synthetic lethal inference workflows. </br> 
 Firstly, we reimplemented the published workflow DAISY (Jerby-Arnon et al., 2014) using up-to-date large scale data resources. </br>
 Secondly, we implemented a mutation-dependent synthetic lethality prediction (MDSLP) workflow based on the rationale that for tumors with mutations that have an impact on protein expression or protein structure (functional mutation), the knockout effects or inhibition of a partner target gene show conditional dependence for the mutated molecular entities.</br>
 Thirdly, we present a workflow that leverages cross-species conservation to infer experimentally-derived synthetic lethal interactions in yeast to predict relevant SL pairs in humans. We implemented the Conserved Genetic Interaction (CGI) workflow based, in part, on methods described in (Srivas et al., 2016) summarized here briefly.
