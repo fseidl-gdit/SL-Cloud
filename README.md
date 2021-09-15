@@ -14,7 +14,7 @@ To  add the syntheticlethality dataset, users need to pin the syntheticlethality
 <img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/add_sldataset.png" >
 
 ### Accessing ISB-CGC Resources
-To add ISB-CGC tables, users need to follow the same steps with Accessing SL resource, only difference is, they need to write isb-cgc-bq into Projectname box.
+To add ISB-CGC tables, users need to follow the same steps with Accessing SL Resource, only difference is, they need to write isb-cgc-bq into Projectname box.
 Adding isb-cgc-bq dataset is a requirement to run DAISY pipeline.
 
 ### First Notebook
@@ -27,21 +27,15 @@ Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/fi
 
 
 
-### Notebooks
-(Guangrong, I guess you updated this part. It looks like copy paste from manuscript, could you please go over it.)
-
-We provide representative synthetic lethal inference workflows. </br> 
-Firstly, we reimplemented the published workflow DAISY (Jerby-Arnon et al., 2014) using up-to-date large scale data resources. </br>
-Secondly, we implemented a mutation-dependent synthetic lethality prediction (MDSLP) workflow based on the rationale that for tumors with mutations that have an impact on protein expression or protein structure (functional mutation), the knockout effects or inhibition of a partner target gene show conditional dependence for the mutated molecular entities.</br>
+econdly, we implemented a mutation-dependent synthetic lethality prediction (MDSLP) workflow based on the rationale that for tumors with mutations that have an impact on protein expression or protein structure (functional mutation), the knockout effects or inhibition of a partner target gene show conditional dependence for the mutated molecular entities.</br>
 Thirdly, we present a workflow that leverages cross-species conservation to infer experimentally-derived synthetic lethal interactions in yeast to predict relevant SL pairs in humans. We implemented the Conserved Genetic Interaction (CGI) workflow based, in part, on methods described in (Srivas et al., 2016) summarized here briefly.
 
 #### Sythetic Lethality Inference Workflows 
 Example notebooks can be found in the Example_pipelines directory, which including the following notebooks:
-- [DAISY Pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/DAISY_example.ipynb) 
-- [Mutation Dependent SL pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/MDSLP_example.ipynb)
-- [Conservation-based Inference from Yeast Genetic Interactions](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/CGI_example.ipynb)
+- [DAISY Pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/DAISY_example.ipynb) :We reimplemented the published workflow DAISY (Jerby-Arnon et al., 2014) using up-to-date large scale data resources. </br>
+- [Mutation Dependent SL pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/MDSLP_example.ipynb): We implemented a mutation-dependent synthetic lethality prediction (MDSLP) workflow based on the rationale that for tumors with mutations that have an impact on protein expression or protein structure (functional mutation), the knockout effects or inhibition of a partner target gene show conditional dependence for the mutated molecular entities.</br>
+- [Conservation-based Inference from Yeast Genetic Interactions](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/CGI_example.ipynb): We presented a workflow that leverages cross-species conservation to infer experimentally-derived synthetic lethal interactions in yeast to predict relevant SL pairs in humans. We implemented the Conserved Genetic Interaction (CGI) workflow based, in part, on methods described in (Srivas et al., 2016) </br>
 
-(Shall we remove these lines?)
 #### Data Wrangling and Cleaning Associated Procedures 
 - Dataset Creation
 - Table Creation
