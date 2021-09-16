@@ -23,7 +23,7 @@ Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/fi
 
 ## What is There in the Project?
 ### Scripts
-- [Scripts folder](https://github.com/IlyaLab/SL-Cloud/tree/main/scripts/): include the functions that are used by DAISY and Mutation Dependent  SL Inference workflows explained below. This folder also contains scripts for data wrangling procedures like BigQuery dataset and table creation, how to save DEPMAP data in BigQuery tables, helper functions like writing dataframes into excel files and gene conversion among gene symbol, EntrezID and alias.
+- [Scripts folder](https://github.com/IlyaLab/SL-Cloud/tree/main/scripts/): includes the functions that are used by DAISY and Mutation Dependent  SL Inference workflows explained below. This folder also contains scripts for data wrangling procedures like BigQuery dataset and table creation, how to save DEPMAP data in BigQuery tables, helper functions like writing dataframes into excel files and gene conversion among gene symbol, EntrezID and alias.
 
 #### Sythetic Lethality Inference Workflows 
 Example notebooks can be found in the Example_pipelines directory, which including the following notebooks:
