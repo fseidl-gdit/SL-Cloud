@@ -5,7 +5,8 @@ from statsmodels.sandbox.stats.multicomp import multipletests
 from scipy import stats
 from google.cloud import bigquery
 from functools import reduce
-
+import helper
+from helper import *
 
 
 def ProcessGeneAlias (client, input_gene_list, database):
@@ -323,7 +324,7 @@ ORDER BY symbol1 ASC, correlation DESC """
 
     results= client.query(sql_correlation).result().to_dataframe()
     if results.shape[0]<1:
-        print("Coexpression inference procedure did not find candidate SL/SDL pairs.")
+        print("Coexpression inference procedure applied on " + data_resource + " did not find candidate " + SL_or_SDL + " pairs.")
         return(results)
         
     report=results[['symbol1', 'symbol2', 'n', 'correlation', 'pvalue']]
@@ -526,8 +527,9 @@ ORDER BY pvalue ASC '''
 
 
   results= client.query(sql_sof).result().to_dataframe()
+
   if results.shape[0]<1:
-      print("SOF inference procedure did not find candidate "  + SL_or_SDL + " pairs.")
+      print("SOF inference procedure applied on " + data_resource + " did not find candidate " + SL_or_SDL + " pairs.")
       return(results)
   report=results [['symbol1', 'symbol2', 'n1', 'n', 'U1', 'pvalue']]
   report=report.dropna()
@@ -580,7 +582,7 @@ def FunctionalExamination(client, SL_or_SDL, database, input_genes, percentile_t
      
 
     else :
-        print("The database name can be either CRISPR or siRNA")
+        print("The database name can be either CRISPR or shRNA")
         return()
     
     mutation_table='syntheticlethality.DepMap_public_20Q3.CCLE_mutation'
@@ -720,7 +722,7 @@ ORDER BY pvalue ASC """
 
     results= client.query(sql_func_ex).result().to_dataframe()
     if results.shape[0]<1:
-      print("Functional Examination inference procedure did not find candidate"+ SL_or_SDL + " pairs.")
+      print("Functional examimation inference procedure applied on " + data_resource + " did not find candidate " + SL_or_SDL + " pairs.")
       return(results)
     
     report=results[['symbol1', 'symbol2', 'n1', 'n' ,'pvalue']]
@@ -738,7 +740,7 @@ ORDER BY pvalue ASC """
 
 def UnionResults(results, SL_or_SDL, labels, tissues):
     '''
-    This functions merges results from the same inference procedure applied on different datasets. A combined p-value is returned
+    This functions merges results from the same inference procedure applied on different datasets. 
     '''
     inds=[]
     for i in range(len(results)):
@@ -763,34 +765,33 @@ def UnionResults(results, SL_or_SDL, labels, tissues):
     rel_cols=combined_results.columns[np.array([x.startswith(labels[i]) for x in combined_results.columns])]
     p_matrix=combined_results[rel_cols]
 
-    agg_p=p_matrix.apply(lambda x:stats.combine_pvalues(x.dropna().tolist(), method='fisher', weights=None)[1], axis=1)
-    
-    combined_results["AggregatedP"]=agg_p
     combined_results["Tissue"]=str(tissues)
     if SL_or_SDL=="SL":
-        inc_cols= ['Inactive', 'SL_Candidate'] +  list(rel_cols) + ['AggregatedP'] +['Tissue']
+        inc_cols= ['Inactive', 'SL_Candidate'] +  list(rel_cols) +['Tissue']
     elif SL_or_SDL=="SDL":
-       inc_cols= ['Overactive', 'SL_Candidate'] +  list(rel_cols) + ['AggregatedP'] +['Tissue']
+       inc_cols= ['Overactive', 'SL_Candidate'] +  list(rel_cols) + ['Tissue']
 
     return(combined_results[inc_cols])
 
-def MergeResults(results, SL_or_SDL, tissues):
+def MergeResults(results, SL_or_SDL, require_all, tissues):
     '''
-    The results from SoF, Coexpression and Fuctional Screening analysis (each of them is optional) are merged,
-    a combined p-value is returned for each Synthetic Lethal pair.
-    '''
+    The results from SoF, Coexpression and Fuctional Screening analysis (each of them is optional) are merged.    '''
     inds=[]
     for i in range(len(results)):
         if results[i].shape[0]<1:
             inds.append(i)
-            
+    if len(inds)>0 and require_all=='yes':
+        print("At least one of the inference procedure did not return results, if you want to merge results from the ones which did, please set require_all variable to 'no' ")
+        print("No SL pairs found by every pipeline")
+        return()
+    else:
+        print(str(len(results)-len(inds)) + " inference procedure results are integrated")
     indices = sorted(inds, reverse=True)
     for idx in indices:
         if idx < len(results):
             results.pop(idx)
     for i in range(len(results)):
         results[i].reset_index(inplace=True, drop=True)
-        results[i].rename(columns = {'AggregatedP':'AggregatedP'+ str(i)}, inplace = True)
 
     combined_results=results[0]
     for i in range(1,len(results)):
@@ -799,59 +800,12 @@ def MergeResults(results, SL_or_SDL, tissues):
         elif SL_or_SDL=="SDL":
             combined_results =pd.merge(combined_results, results[i], on = ['Overactive',  'SL_Candidate'], how = 'inner')
 
-    rel_cols=combined_results.columns[np.array([x.startswith('AggregatedP') for x in combined_results.columns])]
-    p_matrix=combined_results[rel_cols]
-
-    agg_p=p_matrix.apply(lambda x:stats.combine_pvalues(x.dropna().tolist(), method='fisher', weights=None)[1], axis=1)
-    combined_results['FinalP']=agg_p
     combined_results["Tissue"]=str(tissues)
 
     if SL_or_SDL=="SL":
-        inc_cols= ['Inactive', 'SL_Candidate'] +  list(rel_cols) + ['FinalP']
+        inc_cols= ['Inactive', 'SL_Candidate'] 
     elif SL_or_SDL=="SDL":
-        inc_cols= ['Overactive', 'SL_Candidate'] +  list(rel_cols) + ['FinalP']
-
+        inc_cols= ['Overactive', 'SL_Candidate']
+    print()
     return(combined_results[inc_cols])
-
-def ConvertGene(client, input_vector, input_type, output_type):
-    '''
-    This function provides conversion between EntrezID, Gene and Alias
-    Input type can be one of 'Alias', 'Gene', 'EntrezID'
-    output type must a vector like ['Gene', 'EntrezID']
-    '''
-
-
-    sql='''
-    SELECT DISTINCT __IN_TYPE__,  __OUT_TYPE__
-    FROM  `syntheticlethality.gene_information.gene_info_human`
-    where  __IN_TYPE__  in (__IN_VECTOR__)
-    '''
-
-    if input_type=='EntrezID':
-        intermediate_representation = [str(x) for x in input_vector]
-    else:
-        intermediate_representation = ["'"+str(x)+"'" for x in input_vector]
-
-    input_vector_query= ','.join(intermediate_representation)
-
-    out_type_intermediate_representation = [str(x) for x in output_type]
-    output_type_for_query= ','.join(out_type_intermediate_representation)
-
-    sql=sql.replace('__OUT_TYPE__', output_type_for_query)
-    sql=sql.replace('__IN_TYPE__', input_type)
-    sql=sql.replace('__IN_VECTOR__', input_vector_query)
-
-    result= client.query(sql).result().to_dataframe()
-    return(result)
-
-
-def WriteToExcel(excel_file, data_to_write, excel_tab_names):
-    '''
-    This function writes the dataframes whose names are given
-    in data_to-write parameter to the excel files whose names
-    given in excel_file_names parameter
-    '''
-    with pd.ExcelWriter(excel_file) as writer:
-        for i in range(len(excel_tab_names)):
-            data_to_write[i].to_excel(writer, sheet_name=excel_tab_names[i], index=False)
 
