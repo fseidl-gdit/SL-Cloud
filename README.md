@@ -6,9 +6,18 @@ Please find our paper [here](https://www.biorxiv.org/content/10.1101/2021.09.18.
 
 ## Getting Started
 
-### Account Creation
+### Get a Google Identity
+
 To be able to use our platform, researchers first need to have a Google identity, if you don't have one, please click [here](https://accounts.google.com/signup/v2/webcreateaccount?dsh=308321458437252901&continue=https%3A%2F%2Faccounts.google.com%2FManageAccount&flowName=GlifWebSignIn&flowEntry=SignUp#FirstName=&LastName=) to get, you can also link a non-Gmail account(like sluser@nih.gov) as a Google identity by [this method](https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp&nogm=true).
 
+### Request Google Cloud Credits
+
+Take advantage of a one-time ($300 Google Credit)[https://cloud.google.com/free/].
+If you have already used this one-time offer (or there is some other reason you cannot use it), see this information about how to (request ISB-CGC Cloud Credits)[https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/HowtoRequestCloudCredits.html].
+
+###Set up a Google Cloud Project
+
+See Google’s documentation about how to create a (Google Cloud Project)[https://cloud.google.com/resource-manager/docs/creating-managing-projects].
 
 ### First Notebook
 
