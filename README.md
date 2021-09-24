@@ -7,6 +7,8 @@ This project provides a cloud-based data access platform coupled with software a
 ### Account Creation
 To be able to use our platform, researchers first need to have a Google registered email, a Google Cloud account and have created a Google Project. How to set up the accounts can be found at  [ISB-CGC Quick Start Guide](https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/HowToGetStartedonISB-CGC.html).
 
+To start users need to go to the bigQuery Google console : https://console.cloud.google.com/bigquery  and then create a project. Users have to create a project in order to use BigQuery. 
+
 ### First Notebook
 
 Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/first_notebook.ipynb) to start using our bigquery tables. 
@@ -33,7 +35,7 @@ The following represent project-specific datasets with relevance for SL inferenc
 
 
 ### Accessing SL Resource
-To be able to see the data in the syntheticlethality dataset, please add the syntheticlethality dataset, users need to pin the syntheticlethality project by first clicking "ADD DATA" and after selecting "Pin a project" and "Enter project name", you will see the window as in the Figure below. After writing syntheticlethality into Projectname box, please click on PIN. 
+To be able to see the data in the syntheticlethality dataset, please click on https://console.cloud.google.com/bigquery and  add the syntheticlethality dataset, users need to pin the syntheticlethality project by first clicking "ADD DATA" and after selecting "Pin a project" and "Enter project name", you will see the window as in the Figure below. After writing syntheticlethality into Projectname box, please click on PIN. 
 
 <img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/add_sldataset.png" >
 
