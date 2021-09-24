@@ -7,16 +7,6 @@ This project provides a cloud-based data access platform coupled with software a
 ### Account Creation
 To be able to use our platform, researchers first need to have a Google registered email, a Google Cloud account and have created a Google Project. How to set up the accounts can be found at  [ISB-CGC Quick Start Guide](https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/HowToGetStartedonISB-CGC.html).
 
-
-### Accessing SL Resource
-To  add the syntheticlethality dataset, users need to pin the syntheticlethality project by first clicking "ADD DATA" and after selecting "Pin a project" and "Enter project name", you will see the window as in the Figure below. After writing syntheticlethality into Projectname box, please click on PIN. 
-
-<img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/add_sldataset.png" >
-
-### Accessing ISB-CGC Resources
-To add ISB-CGC tables, users need to follow the same steps with Accessing SL Resource, only difference is, they need to write isb-cgc-bq into Projectname box.
-Adding isb-cgc-bq dataset is a requirement to run DAISY pipeline.
-
 ### First Notebook
 
 Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/first_notebook.ipynb) to start using our bigquery tables. 
@@ -42,4 +32,12 @@ The following represent project-specific datasets with relevance for SL inferenc
 - **Gene Information**: Tables with relevant gene annotation information such as yeast and human ortholog information, gene-alias-Entrez ID mapping, gene Ensembl-id mapping, gene-Refseq mapping.
 
 
+### Accessing SL Resource
+To be able to see the data in the syntheticlethality dataset, please add the syntheticlethality dataset, users need to pin the syntheticlethality project by first clicking "ADD DATA" and after selecting "Pin a project" and "Enter project name", you will see the window as in the Figure below. After writing syntheticlethality into Projectname box, please click on PIN. 
+
+<img src="https://github.com/IlyaLab/SL-Cloud/blob/main/figures/add_sldataset.png" >
+
+### Accessing ISB-CGC Resources
+To add ISB-CGC datasets, users need to follow the same steps with Accessing SL Resource, only difference is, they need to write isb-cgc-bq into Projectname box.
+Adding isb-cgc-bq dataset is a requirement to run DAISY pipeline.
 
