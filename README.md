@@ -9,7 +9,6 @@ Please find our paper [here](https://www.biorxiv.org/content/10.1101/2021.09.18.
 ### Account Creation
 To be able to use our platform, researchers first need to have a Google registered email, a Google Cloud account and have created a Google Project. How to set up the accounts can be found at  [ISB-CGC Quick Start Guide](https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/HowToGetStartedonISB-CGC.html).
 
-To start users need to go to the bigQuery Google console : https://console.cloud.google.com/bigquery  and then create a project. Users have to create a project in order to use BigQuery. 
 
 ### First Notebook
 
