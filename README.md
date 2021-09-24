@@ -12,12 +12,12 @@ To be able to use our platform, researchers first need to have a Google identity
 
 ### Request Google Cloud Credits
 
-Take advantage of a one-time ($300 Google Credit)[https://cloud.google.com/free/].
-If you have already used this one-time offer (or there is some other reason you cannot use it), see this information about how to (request ISB-CGC Cloud Credits)[https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/HowtoRequestCloudCredits.html].
+Take advantage of a one-time [$300 Google Credit](https://cloud.google.com/free/).
+If you have already used this one-time offer (or there is some other reason you cannot use it), see this information about how to [request ISB-CGC Cloud Credits](https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/HowtoRequestCloudCredits.html).
 
-###Set up a Google Cloud Project
+### Set up a Google Cloud Project
 
-See Google’s documentation about how to create a (Google Cloud Project)[https://cloud.google.com/resource-manager/docs/creating-managing-projects].
+See Google’s documentation about how to create a [Google Cloud Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
 
 ### First Notebook
 
