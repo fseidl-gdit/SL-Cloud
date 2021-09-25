@@ -8,7 +8,7 @@ Please find our paper [here](https://www.biorxiv.org/content/10.1101/2021.09.18.
 
 ### Get a Google Identity
 
-To be able to use our platform, researchers first need to have a Google identity, if you don't have one, please click [here](https://accounts.google.com/signup/v2/webcreateaccount?dsh=308321458437252901&continue=https%3A%2F%2Faccounts.google.com%2FManageAccount&flowName=GlifWebSignIn&flowEntry=SignUp#FirstName=&LastName=) to get, you can also link a non-Gmail account(<span>sluser@isbscience.org</span>) as a Google identity by [this method](https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp&nogm=true).
+To be able to use our platform, researchers first need to have a Google identity, if you don't have one, please click [here](https://accounts.google.com/signup/v2/webcreateaccount?dsh=308321458437252901&continue=https%3A%2F%2Faccounts.google.com%2FManageAccount&flowName=GlifWebSignIn&flowEntry=SignUp#FirstName=&LastName=) to get, you can also link a non-Gmail account(sluser<span>@isbscience.org</span>) as a Google identity by [this method](https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp&nogm=true).
 
 ### Request Google Cloud Credits
 
@@ -51,5 +51,4 @@ To be able to see the data in the syntheticlethality dataset, please click on ht
 
 ### Accessing ISB-CGC Resources
 To add ISB-CGC datasets, users need to follow the same steps with Accessing SL Resource, only difference is, they need to write isb-cgc-bq into Projectname box.
-Adding isb-cgc-bq dataset is a requirement to run DAISY pipeline.
 
