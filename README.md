@@ -27,7 +27,7 @@ Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/fi
 ### Scripts
 - [Scripts folder](https://github.com/IlyaLab/SL-Cloud/tree/main/scripts/): includes the functions that are used by DAISY and Mutation Dependent  SL Inference workflows explained below. This folder also contains scripts for data wrangling procedures like BigQuery dataset and table creation, how to save DEPMAP data in BigQuery tables, helper functions like writing dataframes into excel files and gene conversion among gene symbol, EntrezID and alias.
 
-#### Sythetic Lethality Inference Workflows 
+### Sythetic Lethality Inference Workflows 
 Example notebooks can be found in the Example_pipelines directory, which including the following notebooks:
 - [DAISY Pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/DAISY_example.ipynb) :We reimplemented the published workflow DAISY (Jerby-Arnon et al., 2014) using up-to-date large scale data resources. </br>
 - [Mutation Dependent SL pipeline](https://github.com/IlyaLab/SL-Cloud/blob/main/Example_pipelines/MDSLP_example.ipynb): We implemented a mutation-dependent synthetic lethality prediction (MDSLP) workflow based on the rationale that for tumors with mutations that have an impact on protein expression or protein structure (functional mutation), the knockout effects or inhibition of a partner target gene show conditional dependence for the mutated molecular entities.</br>
