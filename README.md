@@ -8,7 +8,7 @@ Please find our paper [here](https://www.biorxiv.org/content/10.1101/2021.09.18.
 
 ### Get a Google Identity
 
-To be able to use our platform, researchers first need to have a Google identity, if you don't have one, please click [here](https://accounts.google.com/signup/v2/webcreateaccount?dsh=308321458437252901&continue=https%3A%2F%2Faccounts.google.com%2FManageAccount&flowName=GlifWebSignIn&flowEntry=SignUp#FirstName=&LastName=) to get, you can also link a non-Gmail account(like sluser@isbscience.org) as a Google identity by [this method](https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp&nogm=true).
+To be able to use our platform, researchers first need to have a Google identity, if you don't have one, please click [here](https://accounts.google.com/signup/v2/webcreateaccount?dsh=308321458437252901&continue=https%3A%2F%2Faccounts.google.com%2FManageAccount&flowName=GlifWebSignIn&flowEntry=SignUp#FirstName=&LastName=) to get, you can also link a non-Gmail account(like ht<span>tp://</span>sluser@isbscience.org) as a Google identity by [this method](https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp&nogm=true).
 
 ### Request Google Cloud Credits
 
