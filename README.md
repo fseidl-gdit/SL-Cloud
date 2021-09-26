@@ -18,6 +18,7 @@ If you have already used this one-time offer (or there is some other reason you 
 ### Set up a Google Cloud Project
 
 See Google’s documentation about how to create a [Google Cloud Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
+
 [Enable Required Google Cloud APIs](https://cloud.google.com/apis/docs/getting-started#enabling_apis)
 
 ### First Notebook
