@@ -23,7 +23,6 @@ pip3 install pandas
 pip3 install ipywidgets
 pip3 install numpy
 pip3 install statsmodels
-pip3 install functools
 
 #DEPMAP DataSave pipeline
 pip3 install sys
