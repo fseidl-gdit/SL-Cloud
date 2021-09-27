@@ -30,7 +30,6 @@ pip3 install numpy
 pip3 install pandas
 pip3 install google.cloud
 pip3 install pandas_gbq
-pip3 install functools
 pip3 install importlib
 
 
