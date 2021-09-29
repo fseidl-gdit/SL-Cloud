@@ -4,7 +4,6 @@ import pandas as pd
 from statsmodels.sandbox.stats.multicomp import multipletests
 from scipy import stats
 from google.cloud import bigquery
-from functools import reduce
 import helper
 from helper import *
 
