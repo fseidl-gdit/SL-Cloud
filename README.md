@@ -4,7 +4,7 @@ This project provides a cloud-based data access platform coupled with software a
 
 Please find our paper [here](https://www.biorxiv.org/content/10.1101/2021.09.18.459450v1).
 
-Please reach out Bahar Tercan btercan@systemsbiology.org if you have any questions. 
+ If you have any questions, please reach out Bahar Tercan btercan@systemsbiology.org. 
 
 ## Getting Started
 
