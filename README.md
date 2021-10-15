@@ -54,3 +54,4 @@ To be able to see the data in the syntheticlethality dataset, please click on ht
 ### Accessing ISB-CGC Resources
 To add ISB-CGC datasets, users need to follow the same steps with Accessing SL Resource, only difference is, they need to write isb-cgc-bq into Projectname box.
 
+Please reach out Bahar Tercan btercan@systemsbiology.org if you have any questions. 
