@@ -3,6 +3,7 @@
 This project provides a cloud-based data access platform coupled with software and well documented computational notebooks that re-implement published synthetic lethality (SL) inference algorithms to facilitate novel investigation into synthetic lethality. In addition  we provide general purpose functions that support these prediction workflows e.g. saving data in bigquery tables. We anticipate that computationally savvy users can leverage the resources provided in this project to conduct highly customizable analysis based on their cancer type of interest and particular context. 
 
 Please find our paper [here](https://www.biorxiv.org/content/10.1101/2021.09.18.459450v1).
+Please reach out Bahar Tercan btercan@systemsbiology.org if you have any questions. 
 
 ## Getting Started
 
@@ -24,8 +25,6 @@ See Google’s documentation about how to create a [Google Cloud Project](https:
 ### First Notebook
 
 Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/first_notebook.ipynb) to start using our bigquery tables. 
-
-Please reach out Bahar Tercan btercan@systemsbiology.org if you have any questions. 
 
 ## What is There in the Project?
 ### Scripts
