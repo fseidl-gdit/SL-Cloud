@@ -183,7 +183,7 @@ def RetrieveSamples(client, data_resource, method, tissues):
 
     return selected_samples
 
-def CoexpressionAnalysis(client, SL_or_SDL, data_resource, input_genes, adj_method, tissues):
+def CoexpressionAnalysis(client, SL_or_SDL, data_resource, input_genes, adj_method, fdr_level, tissues):
 
     '''
     The gene correlation information is used to detect SL pairs.
@@ -330,8 +330,18 @@ ORDER BY symbol1 ASC, correlation DESC """
     report=report.dropna()
     report.columns=['InactiveDB', 'SL_Candidate', '#Samples', 'Correlation', 'PValue']
     report['Inactive']= report['InactiveDB'].map(gene_mapping)
-    FDR=multipletests(report['PValue'],  method= adj_method, is_sorted=False)[1]
-    report['FDR']=FDR
+    if fdr_level=="gene_level":
+        inactive_genes=list(report["Inactive"].unique())
+        for i in range(len(inactive_genes)):
+           report.loc[report["Inactive"]==inactive_genes[i],'FDR']=multipletests(report.loc[report["Inactive"]==inactive_genes[i], 'PValue'], method= adj_method, is_sorted=False)[1]
+
+    elif fdr_level=="analysis_level":
+       FDR=multipletests(report['PValue'],  method= adj_method, is_sorted=False)[1]
+       report['FDR']=FDR
+    else:
+      print("FDR level can be either gene_level or analysis_level")
+      return()
+ 
     report['Tissue']=str(tissues)
     cols=['Inactive', 'InactiveDB', 'SL_Candidate', '#Samples', 'Correlation', 'PValue', 'FDR', 'Tissue']
     report=report[cols]
@@ -339,7 +349,7 @@ ORDER BY symbol1 ASC, correlation DESC """
       report.columns= ['Overactive', 'OveractiveDB', 'SL_Candidate', '#Samples', 'Correlation', 'PValue', 'FDR', 'Tissue']
     return report
 
-def SurvivalOfFittest(client, SL_or_SDL, data_source, input_genes, percentile_threshold, cn_threshold, adj_method, tissues, input_mutations='None'):
+def SurvivalOfFittest(client, SL_or_SDL, data_source, input_genes, percentile_threshold, cn_threshold, adj_method, fdr_level, tissues, input_mutations='None'):
 
   ''' percentile_threshold, cn_threshold, pval_correction,
   Gene expression, Copy Number Alteration, Somatic Mutations are used to decide whether gene is inactive.
@@ -534,8 +544,19 @@ ORDER BY pvalue ASC '''
   report=report.dropna()
   report.columns=['InactiveDB', 'SL_Candidate', '#InactiveSamples', '#Samples', 'U1','PValue']
   report['Inactive']= report['InactiveDB'].map(gene_mapping)
-  FDR=multipletests(report['PValue'],  method= adj_method, is_sorted=False)[1]
-  report['FDR']=FDR
+
+  if fdr_level=="gene_level":
+      inactive_genes=list(report["Inactive"].unique())
+      for i in range(len(inactive_genes)):
+         report.loc[report["Inactive"]==inactive_genes[i],'FDR']=multipletests(report.loc[report["Inactive"]==inactive_genes[i], 'PValue'], method= adj_method, is_sorted=False)[1]
+
+  elif fdr_level=="analysis_level":
+     FDR=multipletests(report['PValue'],  method= adj_method, is_sorted=False)[1]
+     report['FDR']=FDR
+  else:
+    print("FDR level can be either gene_level or analysis_level")
+    return()
+ 
   report['Tissue']=str(tissues)
   
   cols=['Inactive', 'InactiveDB', 'SL_Candidate','#InactiveSamples', '#Samples',  'PValue', 'FDR', 'Tissue']
@@ -545,7 +566,7 @@ ORDER BY pvalue ASC '''
   return report
 
   
-def FunctionalExamination(client, SL_or_SDL, database, input_genes, percentile_threshold, cn_threshold, adj_method, tissues,  input_mutations=None):
+def FunctionalExamination(client, SL_or_SDL, database, input_genes, percentile_threshold, cn_threshold, adj_method, fdr_level, tissues,  input_mutations=None):
 
     '''
     Gene expression, Copy Number Alteration, Somatic Mutations (optional) are used to decide whether gene is inactive.
@@ -706,8 +727,6 @@ ORDER BY pvalue ASC """
     sql_func_ex = sql_func_ex.replace('__CCLE_SAMPLE_ID__', ccle_sample_id)
     sql_func_ex = sql_func_ex.replace('__REL_SAMPLE_ID__', cid)
 
-
-
     if SL_or_SDL=="SL":
       comp_str="<"+str(cn_threshold)
       com_gene_th="<"+str(percentile_threshold/100)
@@ -728,8 +747,19 @@ ORDER BY pvalue ASC """
     report=report.dropna()
     report.columns=['InactiveDB', 'SL_Candidate', '#InactiveSamples', '#Samples', 'PValue']
     report['Inactive']= report['InactiveDB'].map(gene_mapping)
-    FDR=multipletests(report['PValue'],  method= adj_method, is_sorted=False)[1]
-    report['FDR']=FDR
+    
+    if fdr_level=="gene_level":
+       inactive_genes=list(report["Inactive"].unique())
+       for i in range(len(inactive_genes)):
+          report.loc[report["Inactive"]==inactive_genes[i],'FDR']=multipletests(report.loc[report["Inactive"]==inactive_genes[i], 'PValue'], method= adj_method, is_sorted=False)[1]
+
+    elif fdr_level=="analysis_level":
+      FDR=multipletests(report['PValue'],  method= adj_method, is_sorted=False)[1]
+      report['FDR']=FDR
+    else:
+      print("FDR level can be either gene_level or analysis_level")
+      return()
+ 
     report['Tissue']=str(tissues)
     cols=['Inactive', 'InactiveDB', 'SL_Candidate','#InactiveSamples', '#Samples', 'PValue', 'FDR', 'Tissue']
     report=report[cols]
@@ -772,19 +802,17 @@ def UnionResults(results, SL_or_SDL, labels, tissues):
 
     return(combined_results[inc_cols])
 
-def MergeResults(results, SL_or_SDL, require_all, tissues):
+def MergeResults(results, SL_or_SDL, tissues):
     '''
-    The results from SoF, Coexpression and Fuctional Screening analysis (each of them is optional) are merged.    '''
+    The results from SoF, Coexpression and Fuctional Screening analysis are merged.    '''
     inds=[]
     for i in range(len(results)):
         if results[i].shape[0]<1:
             inds.append(i)
-    if len(inds)>0 and require_all=='yes':
-        print("At least one of the inference procedure did not return results, if you want to merge results from the ones which did, please set require_all variable to 'no' ")
+    if len(inds)>0 :
+        print("At least one of the inference procedure did not return results")
         print("No SL pairs found by every pipeline")
         return()
-    else:
-        print(str(len(results)-len(inds)) + " inference procedure results are integrated")
     indices = sorted(inds, reverse=True)
     for idx in indices:
         if idx < len(results):
@@ -805,6 +833,5 @@ def MergeResults(results, SL_or_SDL, require_all, tissues):
         inc_cols= ['Inactive', 'SL_Candidate'] 
     elif SL_or_SDL=="SDL":
         inc_cols= ['Overactive', 'SL_Candidate']
-    print()
     return(combined_results[inc_cols])
 
