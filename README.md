@@ -25,6 +25,8 @@ See Google’s documentation about how to create a [Google Cloud Project](https:
 
 Please run the [first notebook](https://github.com/IlyaLab/SL-Cloud/blob/main/first_notebook.ipynb) to start using our bigquery tables. 
 
+Please reach out Bahar Tercan btercan@systemsbiology.org if you have any questions. 
+
 ## What is There in the Project?
 ### Scripts
 - [Scripts folder](https://github.com/IlyaLab/SL-Cloud/tree/main/scripts/): includes the functions that are used by DAISY and Mutation Dependent  SL Inference workflows explained below. This folder also contains scripts for data wrangling procedures like BigQuery dataset and table creation, how to save DEPMAP data in BigQuery tables, helper functions like writing dataframes into excel files and gene conversion among gene symbol, EntrezID and alias.
@@ -53,5 +55,3 @@ To be able to see the data in the syntheticlethality dataset, please click on ht
 
 ### Accessing ISB-CGC Resources
 To add ISB-CGC datasets, users need to follow the same steps with Accessing SL Resource, only difference is, they need to write isb-cgc-bq into Projectname box.
-
-Please reach out Bahar Tercan btercan@systemsbiology.org if you have any questions. 
