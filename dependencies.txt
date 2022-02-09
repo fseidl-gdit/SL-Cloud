@@ -34,6 +34,10 @@ pip3 install google.cloud
 pip3 install pandas_gbq
 pip3 install importlib
 
+#Setup for Conservation-Based Synthetic Lethal Discovery Pipeline
+pip3 install pandas
+pip3 install google.cloud
+pip3 install pyarrow
 
 
 
