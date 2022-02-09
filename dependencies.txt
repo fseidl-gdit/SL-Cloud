@@ -1,6 +1,7 @@
 # Libraries needed for different pipelines
 #First Notebook:
 pip3 install google.cloud
+pip3 install pandas
 
 #MDSLP pipeline:
 pip3 install gcloud
