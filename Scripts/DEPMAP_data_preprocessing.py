@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from google.cloud import bigquery
 import pandas_gbq as gbq
-from functools import reduce
 
 def siRNAPreprocess(input_data, col_name):
     '''
