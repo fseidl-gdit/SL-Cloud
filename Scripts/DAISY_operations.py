@@ -9,16 +9,28 @@ from helper import *
 
 
 def ProcessGeneAlias (client, input_gene_list, database):
+    '''
+    Description:Enables to use  all aliases of the given gene list.
+    
+    Inputs: 
+        client:BigQueryClient, the BigQuery client that will run the function.
+        input_gene_list:list of strings, the list of gene whose SL partners are seeked
+       database:string, the data resource that will be used,  valid values: "PanCancerAtlas", "DepMap"
+
+    Output:
+         A dictionary that maps gene symbosl in the given database to the input gene list
+    
+    '''
     pancanceratlas_genes_query="""SELECT DISTINCT Gene_Symbol from `isb-cgc-bq.pancancer_atlas.Filtered_all_CNVR_data_by_gene`
     UNION DISTINCT  
     SELECT DISTINCT Symbol from  `isb-cgc-bq.pancancer_atlas.Filtered_EBpp_AdjustPANCAN_IlluminaHiSeq_RNASeqV2_genExp`
     UNION DISTINCT
     SELECT DISTINCT Hugo_Symbol from `isb-cgc-bq.pancancer_atlas.Filtered_MC3_MAF_V5_one_per_tumor_sample`  """
-    depmap_genes_query= """ SELECT DISTINCT Hugo_Symbol from  `syntheticlethality.DepMap_public_20Q3.CCLE_gene_cn`
+    depmap_genes_query= """ SELECT DISTINCT Hugo_Symbol from  `isb-cgc-bq.DEPMAP.CCLE_gene_cn_DepMapPublic_current`
     UNION DISTINCT
-    SELECT DISTINCT Hugo_Symbol from `syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression` 
+    SELECT DISTINCT Hugo_Symbol from `isb-cgc-bq.DEPMAP.CCLE_gene_expression_DepMapPublic_current`
     UNION DISTINCT
-    SELECT DISTINCT Hugo_Symbol from `syntheticlethality.DepMap_public_20Q3.CCLE_mutation`   """
+    SELECT DISTINCT Hugo_Symbol from `isb-cgc-bq.DEPMAP.CCLE_mutation_DepMapPublic_current`   """
     df=pd.DataFrame(columns=["Input_Gene", "DB_Gene"])
 
     if database=="PanCancerAtlas":
@@ -49,15 +61,32 @@ def ProcessGeneAlias (client, input_gene_list, database):
         
         
 def GetTCGASubtypes(client):
-
+    '''
+    Description: Returns the TCGA cancer types that have corresponding samples in CCLE data"
+    Input:
+        client:BigQuery client,the BigQuery client that will run the function.
+    Output:
+        List of TCGA cancer types
+    '''
     query="""
-    SELECT DISTINCT TCGA_subtype from `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels`
+    SELECT DISTINCT TCGA_subtype from `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3`
     WHERE  primary_disease not in ('Non-Cancerous','Unknown','Engineered','Immortalized')
     """
     all_tissues=client.query(query).result().to_dataframe()
     return(list(all_tissues['TCGA_subtype']))
 
 def RetrieveSamples(client, data_resource, method, tissues):
+    '''
+    Description:Retrieve the sample ids according to input parameters
+    Inputs:
+        client:BigQuery client, the BigQuery client that will run the function.
+        data_source:string, valid values: "PanCancerAtlas", "CCLE" 
+        method:one of DAISY inference procedures, valid values: "correlation", "sof", "func_ex"
+        tissues: list of strings, the tissue type(s) that we are seeking SL pairs in.Could be one or more tissues. 
+    Output:
+        A dataframe of sample ids and tissue type
+    
+    '''
     min_sample_size=20;
     input_tissues= ["'"+ str(x) + "'" for x in tissues]
     input_tissues= ','.join(input_tissues)
@@ -91,8 +120,8 @@ def RetrieveSamples(client, data_resource, method, tissues):
  
     elif data_resource=='CCLE' and method=='correlation':
         tissue_query= " AND ST.TCGA_subtype in (__TISSUE__) "
-        sample_selection_sql= ''' SELECT  distinct ST.DepMap_ID FROM  `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-        `syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression` E  
+        sample_selection_sql= ''' SELECT  distinct ST.DepMap_ID FROM  `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+        `isb-cgc-bq.DEPMAP.CCLE_gene_expression_DepMapPublic_current` E  
          WHERE ST.primary_disease 
         not in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND E.DepMap_ID=ST.DepMap_ID '''
         if tissues.count('pancancer')==0:
@@ -104,17 +133,17 @@ def RetrieveSamples(client, data_resource, method, tissues):
         tissue_query=  " WHERE TS.TCGA_subtype in (__TISSUE__) "
         sample_selection_sql= '''SELECT distinct DepMap_ID, TCGA_subtype FROM
                 (SELECT  distinct ST.DepMap_ID  AS DepMap_ID, ST.TCGA_subtype as TCGA_subtype
-                FROM  `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-   		 `syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression` E  WHERE  ST.primary_disease not
+                FROM  `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+   		 `isb-cgc-bq.DEPMAP.CCLE_gene_expression_DepMapPublic_current` E  WHERE  ST.primary_disease not
   		in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND E.DepMap_ID=ST.DepMap_ID 
   		INTERSECT DISTINCT
-   		SELECT  distinct ST.DepMap_ID  AS DepMap_ID, ST.TCGA_subtype as TCGA_subtype FROM `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-   		`syntheticlethality.DepMap_public_20Q3.CCLE_gene_cn`  C  WHERE  ST.primary_disease not
+   		SELECT  distinct ST.DepMap_ID  AS DepMap_ID, ST.TCGA_subtype as TCGA_subtype FROM `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+   		`isb-cgc-bq.DEPMAP.CCLE_gene_cn_DepMapPublic_current`  C  WHERE  ST.primary_disease not
   		in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND C.DepMap_ID=ST.DepMap_ID 
   		INTERSECT DISTINCT
   		SELECT  distinct ST.DepMap_ID  AS DepMap_ID, ST.TCGA_subtype as TCGA_subtype
-  		FROM  `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-  		`syntheticlethality.DepMap_public_20Q3.CCLE_mutation` M  WHERE  ST.primary_disease not
+  		FROM  `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+  		`isb-cgc-bq.DEPMAP.CCLE_mutation_DepMapPublic_current` M  WHERE  ST.primary_disease not
   		in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND M.DepMap_ID=ST.DepMap_ID ) TS'''
         if tissues.count('pancancer')==0:
             sample_selection_sql=sample_selection_sql+ tissue_query
@@ -126,20 +155,19 @@ def RetrieveSamples(client, data_resource, method, tissues):
     elif data_resource=='CRISPR' and method=='func_ex':
         tissue_query=  " WHERE TS.TCGA_subtype in (__TISSUE__) "
         sample_selection_sql= '''SELECT distinct DepMap_ID, TCGA_subtype FROM
-        (SELECT  distinct ST.DepMap_ID AS DepMap_ID , ST.TCGA_subtype AS TCGA_subtype FROM `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-       `syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression` E  WHERE  ST.primary_disease not
+        (SELECT  distinct ST.DepMap_ID AS DepMap_ID , ST.TCGA_subtype AS TCGA_subtype FROM `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,     `isb-cgc-bq.DEPMAP.CCLE_gene_expression_DepMapPublic_current` E  WHERE  ST.primary_disease not
       in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND E.DepMap_ID=ST.DepMap_ID 
       INTERSECT DISTINCT
-      SELECT distinct ST.DepMap_ID AS DepMap_ID , ST.TCGA_subtype AS TCGA_subtype  FROM  `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-      `syntheticlethality.DepMap_public_20Q3.CCLE_gene_cn`  C  WHERE  ST.primary_disease not
+      SELECT distinct ST.DepMap_ID AS DepMap_ID , ST.TCGA_subtype AS TCGA_subtype  FROM  `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+      `isb-cgc-bq.DEPMAP.CCLE_gene_cn_DepMapPublic_current`  C  WHERE  ST.primary_disease not
       in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND C.DepMap_ID=ST.DepMap_ID 
       INTERSECT DISTINCT
-      SELECT distinct ST.DepMap_ID AS DepMap_ID , ST.TCGA_subtype AS TCGA_subtype  FROM  `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-      `syntheticlethality.DepMap_public_20Q3.CCLE_mutation` M  WHERE ST.primary_disease not
+      SELECT distinct ST.DepMap_ID AS DepMap_ID , ST.TCGA_subtype AS TCGA_subtype  FROM `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+      `isb-cgc-bq.DEPMAP.CCLE_mutation_DepMapPublic_current` M  WHERE ST.primary_disease not
       in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND M.DepMap_ID=ST.DepMap_ID 
       INTERSECT DISTINCT
-      SELECT distinct ST.DepMap_ID AS DepMap_ID , ST.TCGA_subtype AS TCGA_subtype  FROM  `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-      `syntheticlethality.DepMap_public_20Q3.Achilles_gene_effect` A  WHERE  ST.primary_disease not
+      SELECT distinct ST.DepMap_ID AS DepMap_ID , ST.TCGA_subtype AS TCGA_subtype  FROM  `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+      `isb-cgc-bq.DEPMAP.Achilles_gene_effect_DepMapPublic_current` A  WHERE  ST.primary_disease not
       in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND A.DepMap_ID=ST.DepMap_ID)  TS'''
         if tissues.count('pancancer')==0:
             sample_selection_sql=sample_selection_sql+ tissue_query
@@ -151,28 +179,28 @@ def RetrieveSamples(client, data_resource, method, tissues):
         tissue_query="WHERE TS.TCGA_subtype in (__TISSUE__)"
         sample_selection_sql= '''SELECT CCLE_Name, DepMap_ID FROM
       (SELECT distinct ST.CCLE_Name AS CCLE_Name, ST.DepMap_ID  AS DepMap_ID, ST.TCGA_subtype AS TCGA_subtype  FROM
-      `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-      `syntheticlethality.DEMETER2_v6.D2_combined_gene_dep_score`   DS  WHERE ST.primary_disease not
+     `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+      `isb-cgc-bq.DEPMAP.Combined_gene_dep_score_DEMETER2_current`   DS  WHERE ST.primary_disease not
         in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND DS.CCLE_ID=ST.CCLE_Name
 
       INTERSECT DISTINCT
 
       SELECT distinct  ST.CCLE_Name AS CCLE_Name, ST.DepMap_ID  AS DepMap_ID, ST.TCGA_subtype AS TCGA_subtype
-        FROM  `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-     `syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression`   E  WHERE   ST.primary_disease not
+        FROM  `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+     `isb-cgc-bq.DEPMAP.CCLE_gene_expression_DepMapPublic_current`  E  WHERE   ST.primary_disease not
      in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND E.DepMap_ID=ST.DepMap_ID
 
       INTERSECT DISTINCT
 
        SELECT  distinct ST.CCLE_Name AS CCLE_Name, ST.DepMap_ID  AS DepMap_ID,   ST.TCGA_subtype AS TCGA_subtype FROM
-     `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-       `syntheticlethality.DepMap_public_20Q3.CCLE_gene_cn`  C  WHERE ST.primary_disease not
+     `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+       `isb-cgc-bq.DEPMAP.CCLE_gene_cn_DepMapPublic_current`  C  WHERE ST.primary_disease not
       in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND C.DepMap_ID=ST.DepMap_ID 
 
       INTERSECT DISTINCT
       SELECT  distinct ST.CCLE_Name AS CCLE_Name, ST.DepMap_ID  AS DepMap_ID, ST.TCGA_subtype AS TCGA_subtype FROM
-     `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` ST,
-       `syntheticlethality.DepMap_public_20Q3.CCLE_mutation` M  WHERE  ST.primary_disease not
+     `isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3` ST,
+       `isb-cgc-bq.DEPMAP.CCLE_mutation_DepMapPublic_current` M  WHERE  ST.primary_disease not
        in ('Non-Cancerous','Unknown','Engineered','Immortalized') AND M.DepMap_ID=ST.DepMap_ID) TS '''
 
         if tissues.count('pancancer')==0:
@@ -186,7 +214,20 @@ def RetrieveSamples(client, data_resource, method, tissues):
 def CoexpressionAnalysis(client, SL_or_SDL, data_resource, input_genes, adj_method, fdr_level, tissues):
 
     '''
-    The gene correlation information is used to detect SL pairs.
+   Description: "The gene correlation information is used to detect SL pairs."
+
+   Inputs:
+    client:BigQueryClient, the BigQuery client that will run the function.
+    SL_or_SDL:string, Synthetic lethal or Synthetic Dosage Lethal, valid values: 'SL', 'SDL'
+    data_resource: string, The dataresource the analysis will be performed on, 	valid values: "CCLE", "PanCancerAtlas"
+    input_genes:list of strings, the list of genes whose SL/SDL partners will be seeked	
+    adj_method:	string,	optional, p value correction method,  valid_values:bonferroni,  sidak, holm-sidak , holm, simes-hochberg , hommel, fdr_bh,  fdr_by , fdr_tsbh, fdr_tsbky 
+    fdr_level:string, the data that will be considered wile doing p value adjustment, valid values : "gene_level", "analysis_level"
+    tissues: The tissues that the analysis will be performed on. 
+
+    Output:
+    A dataframe of SL/SDL pairs
+        
     '''
   
     if data_resource=='PanCancerAtlas':
@@ -200,7 +241,7 @@ def CoexpressionAnalysis(client, SL_or_SDL, data_resource, input_genes, adj_meth
 
         
     elif data_resource=='CCLE':
-        table_name='syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression'
+        table_name='isb-cgc-bq.DEPMAP.CCLE_gene_expression_DepMapPublic_current'
         gene_col_name='Hugo_Symbol'
         exp_name='TPM'
         sample_barcode='DepMap_ID'
@@ -351,10 +392,24 @@ ORDER BY symbol1 ASC, correlation DESC """
 
 def SurvivalOfFittest(client, SL_or_SDL, data_source, input_genes, percentile_threshold, cn_threshold, adj_method, fdr_level, tissues, input_mutations='None'):
 
-  ''' percentile_threshold, cn_threshold, pval_correction,
-  Gene expression, Copy Number Alteration, Somatic Mutations are used to decide whether gene is inactive.
-  The SL pair detection according to difference in gene effect/dependency score
-  given one gene is inactive vs not-inactive
+  '''
+   Description: Gene expression, Copy Number Alteration (CNA), Somatic Mutations are used to decide whether gene is inactive.
+   The SL pair detection according to difference in CNA given one gene is inactive vs not-inactive
+   Inputs:
+    client:BigQueryClient, the BigQuery client that will run the function.
+    SL_or_SDL:string, Synthetic lethal or Synthetic Dosage Lethal, valid values: 'SL', 'SDL'
+    data_resource: string, The dataresource the analysis will be performed on, 	valid values: "CCLE", "PanCancerAtlas"
+    input_genes:list of strings, the list of genes whose SL/SDL partners will be seeked	
+    percentile_threshold:double, the threshold for gene expression (for deciding whether a gene is inactive)
+    cn_threshold:double, the threshold for copy number alteration (for deciding whether a gene is inactive)
+    adj_method:	string,	optional, p value correction method,  valid_values:bonferroni,  sidak, holm-sidak , holm, simes-hochberg , hommel, fdr_bh,  fdr_by , fdr_tsbh, fdr_tsbky 
+    fdr_level:string, the data that will be considered wile doing p value adjustment, valid values : "gene_level", "analysis_level"
+    tissues: The tissues that the analysis will be performed on. 
+    input_mutations:list of strings, optional, valid values: Missense_Mutation, Nonsense_Mutation,Translation_Start_Site, Frame_Shift_Ins, Splice_Site, In_Frame_DelFrame_Shift_Del, Nonstop_Mutation, In_Frame_Ins
+        
+   Output:
+       A dataframe of SL/SDL  pairs
+
   '''
   if data_source=='PanCancerAtlas':
         gene_exp_table='isb-cgc-bq.pancancer_atlas.Filtered_EBpp_AdjustPANCAN_IlluminaHiSeq_RNASeqV2_genExp'
@@ -372,9 +427,9 @@ def SurvivalOfFittest(client, SL_or_SDL, data_source, input_genes, percentile_th
         selected_samples= RetrieveSamples(client, 'PanCancerAtlas', 'sof', tissues)
         gene_mapping=ProcessGeneAlias(client, input_genes, 'PanCancerAtlas')
   elif data_source=='CCLE':
-        mutation_table='syntheticlethality.DepMap_public_20Q3.CCLE_mutation'
-        gene_exp_table='syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression'
-        cn_table='syntheticlethality.DepMap_public_20Q3.CCLE_gene_cn'
+        mutation_table='isb-cgc-bq.DEPMAP.CCLE_mutation_DepMapPublic_current'
+        gene_exp_table='isb-cgc-bq.DEPMAP.CCLE_gene_expression_DepMapPublic_current'
+        cn_table='isb-cgc-bq.DEPMAP.CCLE_gene_cn_DepMapPublic_current'
         sample_id='DepMap_ID'
         gene_col_name='Hugo_Symbol'
         gene_exp='TPM'
@@ -569,16 +624,31 @@ ORDER BY pvalue ASC '''
 def FunctionalExamination(client, SL_or_SDL, database, input_genes, percentile_threshold, cn_threshold, adj_method, fdr_level, tissues,  input_mutations=None):
 
     '''
-    Gene expression, Copy Number Alteration, Somatic Mutations (optional) are used to decide whether gene is inactive.
+      Description: Gene expression, Copy Number Alteration (CNA), Somatic Mutations (optional) are used to decide whether gene is inactive.
+      The SL/SDL pair detection according to difference in gene effect/dependency score given one gene is inactive vs not-inactive
 
-    The SL pair detection according to difference in gene effect/dependency score
-    given one gene is inactive vs not-inactive
+   Inputs:
+    client:BigQueryClient, the BigQuery client that will run the function.
+    SL_or_SDL:string, Synthetic lethal or Synthetic Dosage Lethal, valid values: 'SL', 'SDL'
+    database: string, The dataresource the analysis will be performed on, 	valid values: "CRISPR", "shRNA"
+    input_genes:list of strings, the list of genes whose SL/SDL partners will be seeked	
+    percentile_threshold:double, the threshold for gene expression (for deciding whether a gene is inactive)
+    cn_threshold:double, the threshold for copy number alteration (for deciding whether a gene is inactive)
+    adj_method:	string,	optional, p value correction method,  valid_values:bonferroni,  sidak, holm-sidak , holm, simes-hochberg , hommel, fdr_bh,  fdr_by , fdr_tsbh, fdr_tsbky 
+    fdr_level:string, the data that will be considered wile doing p value adjustment, valid values : "gene_level", "analysis_level"
+    tissues: list of strings, the tissues that the analysis will be performed on. 
+    input_mutations:list of strings, optional, valid values: "Missense_Mutation", "Nonsense_Mutation","Translation_Start_Site", "Frame_Shift_Ins", "Splice_Site",
+    "In_Frame_Del","Frame_Shift_Del", "Nonstop_Mutation", "In_Frame_Ins"
+        
+   Output:
+       A dataframe of SL/SDL pairs
     '''
 
+       
 
     if database=='CRISPR':
  
-        dep_score_table='syntheticlethality.DepMap_public_20Q3.Achilles_gene_effect'
+        dep_score_table='isb-cgc-bq.DEPMAP.Achilles_gene_effect_DepMapPublic_current'
         sample_id='DepMap_ID'
         gene_exp='TPM'
         effect='Gene_Effect'
@@ -589,7 +659,7 @@ def FunctionalExamination(client, SL_or_SDL, database, input_genes, percentile_t
         cid="DepMap_ID"
 
     elif database=='shRNA':
-        dep_score_table='syntheticlethality.DEMETER2_v6.D2_combined_gene_dep_score'
+        dep_score_table='isb-cgc-bq.DEPMAP.Combined_gene_dep_score_DEMETER2_current'
         sample_id='CCLE_ID'
         gene_exp='TPM'
         effect='Combined_Gene_Dep_Score'
@@ -605,10 +675,10 @@ def FunctionalExamination(client, SL_or_SDL, database, input_genes, percentile_t
         print("The database name can be either CRISPR or shRNA")
         return()
     
-    mutation_table='syntheticlethality.DepMap_public_20Q3.CCLE_mutation'
-    gene_exp_table='syntheticlethality.DepMap_public_20Q3.CCLE_gene_expression'
-    cn_table='syntheticlethality.DepMap_public_20Q3.CCLE_gene_cn'
-    sample_info_table='syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels'
+    mutation_table='isb-cgc-bq.DEPMAP.CCLE_mutation_DepMapPublic_current'
+    gene_exp_table='isb-cgc-bq.DEPMAP.CCLE_gene_expression_DepMapPublic_current'
+    cn_table='isb-cgc-bq.DEPMAP.CCLE_gene_cn_DepMapPublic_current'
+    sample_info_table='isb-cgc-bq.synthetic_lethality.sample_info_TCGAlabels_DepMapPublic_20Q3'
     cn_threshold=np.log2(2**(cn_threshold)+1)
     gene_mapping=ProcessGeneAlias(client, input_genes, 'DepMap')
 
@@ -769,7 +839,15 @@ ORDER BY pvalue ASC """
 
 def UnionResults(results, SL_or_SDL, labels, tissues):
     '''
-    This functions merges results from the same inference procedure applied on different datasets. 
+    Description: This functions merges results from the same inference procedure applied on different datasets.
+    Inputs:
+        results: list of dataframes, the output of inference procedure applied on different datasets,
+        SL_or_SDL:string, Synthetic lethal or Synthetic Dosage Lethal, valid values: 'SL', 'SDL'
+        labels:string, the column names to be used,valid values: 'PValue', 'FDR'
+        tissues: list of strings, the tissues that the analysis will be performed on.
+
+    Output:
+         A dataframe o merged results
     '''
     inds=[]
     for i in range(len(results)):
@@ -804,7 +882,15 @@ def UnionResults(results, SL_or_SDL, labels, tissues):
 
 def MergeResults(results, SL_or_SDL, tissues):
     '''
-    The results from SoF, Coexpression and Fuctional Screening analysis are merged.    '''
+  Description: This function merges results from SoF, Coexpression and Functional Examination procedures
+  Inputs:
+    results: list of dataframes, the output of inference procedure applied on different datasets,
+    SL_or_SDL:string, Synthetic lethal or Synthetic Dosage Lethal, valid values: 'SL', 'SDL'
+    tissues: list of strings, the tissues that the analysis will be performed on.
+ Output:
+    A dataframe o merged results
+    '''
+      
     inds=[]
     for i in range(len(results)):
         if results[i].shape[0]<1:
