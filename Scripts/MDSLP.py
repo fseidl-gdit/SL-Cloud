@@ -1,13 +1,12 @@
 from google.cloud import bigquery
-project_id='syntheticlethality'
-client = bigquery.Client(project_id)
 import pandas as pd
 from scipy import stats 
 import statsmodels.stats.multitest as multi
 import numpy as np
 
-def GeneSymbol_standardization(Gene_list):
-    
+## The GeneSymbol_standardization function will convert all non-standarized gene list to approved gene symbols.###
+def GeneSymbol_standardization(Gene_list,project_id):
+    client = bigquery.Client(project_id)
     query='''
         SELECT *
         FROM  `syntheticlethality.gene_information.gene_info_human`
@@ -53,11 +52,10 @@ def GeneSymbol_standardization(Gene_list):
             
     return(dic_gene_to_alias, output_gene_list)
 
-
-
-def GeneSymbol_standardization_output(Gene_list):
+## The GeneSymbol_standardization_output function will convert all non-standarized gene list to approved gene symbols in the output file.###
+def GeneSymbol_standardization_output(Gene_list,project_id):
     Gene_list = list(set(Gene_list))
-    
+    client = bigquery.Client(project_id)
     query='''
         SELECT *
         FROM  `syntheticlethality.gene_information.gene_info_human`
@@ -72,24 +70,17 @@ def GeneSymbol_standardization_output(Gene_list):
     id_map = client.query(query,  job_config=job_config).result().to_dataframe()
     alias_list = list(id_map['Alias'].values)
     gene_list = list(id_map['Gene'].values) 
-    
-    
 
     dic_alias_to_gene = {}
     
     for i in range(0,len(alias_list)):
         dic_alias_to_gene[alias_list[i]] = gene_list[i]
     
-    #result_gene_list = []
-    #for gene in Gene_list:
-    #    if gene in dic_alias_to_gene:
-    #        result_gene_list.append(dic_alias_to_gene[gene])
-    #    else:
-    #        result_gene_list.append(gene)
     return(dic_alias_to_gene)
 
-
-def get_ccle_sample_info():
+## Get sample information from the CCLE dataset; version (Depmap 20Q3). 
+def get_ccle_sample_info(project_id):
+    client = bigquery.Client(project_id)
     query = ''' 
             SELECT DepMap_ID, CCLE_Name,primary_disease,TCGA_subtype
             FROM `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` 
@@ -97,7 +88,9 @@ def get_ccle_sample_info():
     sample_info = client.query(query).result().to_dataframe()
     return(sample_info)
 
-def get_ccle_mutation_data():
+## Get gene mutation matrix from the CCLE dataset; version (Depmap 20Q3). 
+def get_ccle_mutation_data(project_id):
+    client = bigquery.Client(project_id)    
     #Mutation matrix
     query = ''' 
             select Hugo_Symbol,DepMap_ID,Variant_Classification 
@@ -106,7 +99,8 @@ def get_ccle_mutation_data():
     Mut_mat = client.query(query).result().to_dataframe()
     return(Mut_mat)
 
-def get_depmap_crispr_data():
+## Get gene gene knockout effects from CRISPR dataset in Depmap data portal; version (Depmap 20Q3). 
+def get_depmap_crispr_data(project_id):
     import requests
     from io import StringIO
 
@@ -127,7 +121,8 @@ def get_depmap_crispr_data():
 
     return(Depmap_matrix)
 
-def get_demeter_shRNA_data():
+## Get gene gene down effects from shRNA dataset in Depmap data portal; version (Demeter). 
+def get_demeter_shRNA_data(project_id):
     import requests
     from io import StringIO
     url = "https://ndownloader.figshare.com/files/13515395"
@@ -142,7 +137,7 @@ def get_demeter_shRNA_data():
         gene_names_new.append(name)
     Depmap_matrix.index = gene_names_new
     
-    sample_info = get_ccle_sample_info()
+    sample_info = get_ccle_sample_info(project_id)
     sample_map = {}
     for i in range(0, sample_info.shape[0]):
         Depmap_id = sample_info.iloc[i,0]
@@ -166,8 +161,26 @@ def get_demeter_shRNA_data():
     Depmap_matrix_sele = Depmap_matrix_sele.transpose()
     return(Depmap_matrix_sele)
 
-def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, datatype ):
-    
+def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, datatype,project_id ):
+    """
+    Description: The mutation-dependent synthetic lethality prediction (MDSLP) workflow is based on the rationale that, 
+    for tumors with mutations that have an impact on protein expression or structure (functional mutation), 
+    the knockout effects or inhibition of a partner target gene show conditional dependence for the mutated molecular entities. 
+    Leveraging the public cancer cell line datasets including gene mutation data from CCLE, and functional screening data generated 
+    by either shRNA or CRISPR technology from DepMap (Dempster et al., 2019; Ghandi et al., 2019; McFarland et al., 2018; Meyers et al., 2017), 
+    we integrated these data modalities to evaluate mutation-based conditional dependence. 
+
+    Input:  
+    tumor_type: A list of tumor types 
+    mut_gene: The list of mutated genes
+    Mut_mat: The mutation matrix from CCLE data set
+    Depmap_matrix: The shRNA or CRISPR dataset 
+    datatype: "shRNA" or "Crispr"
+
+    Output: 
+    A dataframe that describe the potential synthetic lethality interactions.
+
+    """    
     def Cohen_dist(x,y):
 
         n1 = len(x)
@@ -178,15 +191,17 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
     
     
     #selection of cancer cell lines in certain tumor types  
+    client = bigquery.Client(project_id)
     query = ''' 
             SELECT DepMap_ID, primary_disease,TCGA_subtype
             FROM `syntheticlethality.DepMap_public_20Q3.sample_info_Depmap_withTCGA_labels` 
             '''
     sample_info = client.query(query).result().to_dataframe()
     
-    pancancer_cls = (sample_info.loc[~sample_info['primary_disease'].isin(['Non-Cancerous','Unknown','Engineered','Immortalized'])])
-    pancancer_cls = pancancer_cls.loc[~(pancancer_cls['primary_disease'].isna())]
+    pancancer_cls = (sample_info.loc[~sample_info['primary_disease'].isin(['Non-Cancerous','Unknown','Engineered','Immortalized'])]) #'Non-Cancerous','Unknown','Engineered','Immortalized' cell lines are excluded.
+    pancancer_cls = pancancer_cls.loc[~(pancancer_cls['primary_disease'].isna())] #cell lines without known primary disease is excluded. 
     
+    #selection of cell lines in the tumor types selected
     if tumor_type == ['pancancer']:
         cl_sele = list(pancancer_cls['DepMap_ID'].values)
 
@@ -204,7 +219,7 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
     samples_with_mut = client.query(query).result().to_dataframe()
     samples_with_mut = set(samples_with_mut['DepMap_ID'])
     
-    
+    #The following mutation events are included in the analysis. 
     selected_variants = ['Splice_Site',
                      'Frame_Shift_Del',
                      'Frame_Shift_Ins',
@@ -242,7 +257,7 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
         samples_depmap = client.query(query).result().to_dataframe()
         samples_depmap = set(samples_depmap['CCLE_ID'])
         
-        sample_info = get_ccle_sample_info()
+        sample_info = get_ccle_sample_info(project_id)
         sample_map = {}
         for i in range(0, sample_info.shape[0]):
             Depmap_id = sample_info.iloc[i,0]
@@ -272,16 +287,12 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
     size_mut = []
     FDR_List = []
     result = pd.DataFrame()
-    #for Gene in list(mut_gene['HGNC_gene_symbol']):
 
     for Gene in mut_gene:
-    #for Gene in range(0,1):
         print("Gene mutated: " + Gene)
         p_list_curr = []
         Mut_group = list(Mut_mat_sele3.loc[Mut_mat_sele3['Hugo_Symbol'] == Gene]['DepMap_ID'].values)
-        #Mut_group = list(Mut_mat_sele3.loc[Mut_mat_sele3['Hugo_Symbol'].isin(mut_gene) ]['DepMap_ID'].values)
         WT_group = list(set(Samples_with_mut_kd) - set(Mut_group))
-        #print(len(Mut_group))
         print("Number of samples with mutation: " + str(len(Mut_group)))
         
         for Gene_kd in list(Depmap_matrix_sele.index.values):
@@ -296,33 +307,37 @@ def Mutational_based_SL_pipeline(tumor_type, mut_gene, Mut_mat, Depmap_matrix, d
             not_nan_array = ~ nan_array
             D_wt_new = D_wt_new[not_nan_array]
             
-            if len(D_mut_new) > 5:
-                
 
+            # T-test is used to test the significance of difference of the gene knockout/knockdown effects between the mutated group and wt-group.
+            # Cohen's distance was used to measure the different between the two groups. 
+            # genes that with mutation in more than 5 cell lines are taken into consideration. 
+        
+            if len(D_mut_new) > 5:
                 Sci_test = stats.ttest_ind(D_mut_new, D_wt_new, nan_policy = 'omit')
                 pvalue = Sci_test[1]
                 if np.isnan(pvalue) == False:
-                    size_mut.append(len(D_mut_new))
-                    p_list_curr.append(pvalue)
-                    Size_effect =Cohen_dist(D_mut_new, D_wt_new)
+                    size_mut.append(len(D_mut_new))              #Number of cell lines with mutation of the gene being tested. 
+                    p_list_curr.append(pvalue)                   # p_value from the t-test
+                    Size_effect =Cohen_dist(D_mut_new, D_wt_new) # The difference of gene knockout/knockdown effects between the mutated group and the wild type group
                     es_list.append(Size_effect)
-                    Gene_mut_list.append(Gene)
-                    Gene_kd_list.append(Gene_kd)
+                    Gene_mut_list.append(Gene)                   # The gene being mutated
+                    Gene_kd_list.append(Gene_kd)                 # The gene being knockout/knockdown
 
         if len(p_list_curr) > 0:
 
-            FDR_List_table = multi.multipletests(p_list_curr, alpha=0.05, method='fdr_bh', is_sorted=False)[1]
+            FDR_List_table = multi.multipletests(p_list_curr, alpha=0.05, method='fdr_bh', is_sorted=False)[1]    #Multi-testing correlation based on each gene
             p_list = p_list + p_list_curr
             FDR_List = FDR_List + list(FDR_List_table)
             
     if len(p_list) > 0:
         FDR_List_table = multi.multipletests(p_list, alpha=0.05, method='fdr_bh', is_sorted=False)[1]
-        FDR_List_allExp = list(FDR_List_table)
+        FDR_List_allExp = list(FDR_List_table)  #Multi-testing correlation for the whole experiment
     
+        # Standardize output
         Gene_mut_list_symbol = []
         Gene_mut_list_set = list(set(Gene_mut_list))
 
-        dic_alias_gene = GeneSymbol_standardization_output(Gene_kd_list)
+        dic_alias_gene = GeneSymbol_standardization_output(Gene_kd_list,project_id)
         Gene_mut_list_Symbol = []
         for gene in Gene_mut_list:
             if gene in dic_alias_gene:
