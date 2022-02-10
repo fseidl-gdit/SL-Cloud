@@ -4,15 +4,17 @@ import pandas as pd
 
 def ConvertGene(client, input_vector, input_type, output_type):
     '''
-    This function provides conversion between EntrezID, Gene and Alias
-    Input type can be one of 'Alias', 'Gene', 'EntrezID'
-    output type must a vector like ['Gene', 'EntrezID']
+    Description: This function provides conversion between EntrezID, Gene and Alias
+    Inputs:
+        client:BigQueryClient, the Bigquery client that will do the operation
+        input_vector:list of integers or  strings (depending on the input)	
+        input_type: string,  valid values: 'Alias', 'Gene', 'EntrezID'
+        output_type:list of strings,  output type must a vector like ['Gene', 'EntrezID']
     '''
-
-
     sql='''
     SELECT DISTINCT __IN_TYPE__,  __OUT_TYPE__
-    FROM  `syntheticlethality.gene_information.gene_info_human`
+   
+    FROM  `isb-cgc-bq.annotations.gene_info_human_NCBI_current`
     where  __IN_TYPE__  in (__IN_VECTOR__)
     '''
 
@@ -36,9 +38,14 @@ def ConvertGene(client, input_vector, input_type, output_type):
 
 def WriteToExcel(excel_file, data_to_write, excel_tab_names):
     '''
-    This function writes the dataframes whose names are given
+    Description: This function writes the dataframes whose names are given
     in data_to-write parameter to the excel files whose names
     given in excel_file_names parameter
+    Inputs:
+       excel_file:string, the name of the excel file that the data will be written into. 
+       data_to_write:list of dataframes, the dataframes that will be written into the tabs of the excel file
+       excel_tab_names:list of strings, the tab names of the excel file, in the same order with the dataframes that will be written.
+    
     '''
     with pd.ExcelWriter(excel_file) as writer:
         for i in range(len(excel_tab_names)):

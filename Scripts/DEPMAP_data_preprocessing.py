@@ -4,9 +4,14 @@ import pandas as pd
 from google.cloud import bigquery
 import pandas_gbq as gbq
 
-def siRNAPreprocess(input_data, col_name):
+def shRNAPreprocess(input_data, col_name):
     '''
-    Preprocesses DEPMAP DEMETER2 data and converts into it long format
+    Description:Preprocesses DEPMAP DEMETER2 data and converts into it long format
+    Inputs:
+        input_data: dataframe,either gene expression, cnv or gene effect
+        col_name: string, the colunm name  for measurements e.g CNA
+    Output:
+        long_table: dataframe, long format of the input data given in wide format
     '''
 
     data=input_data.copy(deep=False)
@@ -17,7 +22,13 @@ def siRNAPreprocess(input_data, col_name):
 
 def CRISPRPreprocess(input_data, col_name, id='DepMap_ID'):
     '''
-    Preprocesses DEPMAP CRISPR data and converts into into long format
+    Description:Preprocesses DEPMAP CRISPR data and converts into into long format
+    Inputs:
+       input_data: dataframe,either gene expression, cnv or gene effect
+       col_name: string, the colunm name  for measurements e.g CNA
+    Output:
+        long_table: dataframe, long format of the input data given in wide format
+    
     '''
 
     data=input_data.copy(deep=False)
@@ -42,5 +53,7 @@ def CRISPRPreprocess(input_data, col_name, id='DepMap_ID'):
     long_table = data.unstack().reset_index()
     long_table = long_table.set_axis(['Hugo_Symbol', id, col_name], axis=1, inplace=False)
     long_table['Entrez_ID']=[gene_entrez_map.get(x) for x in long_table['Hugo_Symbol']]
+  # long_table['Entrez_ID']= pd.to_numeric(long_table['Entrez_ID'])
+
     long_table=long_table[['Entrez_ID','Hugo_Symbol',id, col_name]]
     return(long_table)
